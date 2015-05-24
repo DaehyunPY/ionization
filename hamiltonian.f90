@@ -148,40 +148,6 @@ subroutine diag
 end subroutine diag
 
 
-! ==================================================
-! TEST 
-! ==================================================
-! check potential ----------------------------------
-! subroutine check_poten
-!     integer  (i1), parameter :: file_poten = 101
-!     character(30), parameter :: form_poten = '(30ES25.10)'
-!     integer  (i4) :: i 
-
-!     open(file_poten, file = "output/poten.d")
-!     do i = 1, N
-!         write(file_poten, form_poten) coord_r(i), Poten_r(coord_r(i))*Charge
-!     end do
-!     close(file_poten)
-! end subroutine check_poten
-! end check potential ------------------------------
-! check coordination system ------------------------
-! subroutine check_coord
-!     use gsl_special, only: gsl_sf_legendre_Pl
-!     integer  (i1), parameter :: file_coord = 101
-!     character(30), parameter :: form_coord = '(30ES25.10)'
-!     integer  (i4) :: i 
-
-!     open(file_coord, file = "output/coord.d")
-!     write(file_coord, form_coord) coord_r(0_i4), coord_rho(0), coord_weight(0)
-!     do i = 1, N -1 
-!         write(file_coord, form_coord) coord_r(i), coord_rho(i), coord_weight(i), & 
-!             N*(coord_rho(i)*gsl_sf_legendre_Pl(N, coord_rho(i)) -gsl_sf_legendre_Pl(N -1_i4, coord_rho(i))) &
-!                 /(coord_rho(i)**2.d0 -1.d0)
-!     end do 
-!     write(file_coord, form_coord) coord_r(N), coord_rho(N), coord_weight(N)
-!     close(file_coord)
-! end subroutine check_coord
-! end check coordination system --------------------
 
 
 
@@ -414,7 +380,7 @@ end subroutine PROC_inform
 ! end information ----------------------------------
 ! coordination -------------------------------------
 subroutine PORC_coord
-    use gsl_special, only: gsl_sf_legendre_Pl
+    use fgsl, only: fgsl_sf_legendre_Pl
     real   (dp) :: tmp
     real   (qp) :: sum 
     integer(i4) :: i, j, k 
@@ -436,7 +402,7 @@ subroutine PORC_coord
     coord_weight(0) = tmp 
     do i = 1, N -1
         coord_rho   (i) = X(1, i)
-        coord_weight(i) = tmp/(gsl_sf_legendre_Pl(N, coord_rho(i)))**2.d0 
+        coord_weight(i) = tmp/(fgsl_sf_legendre_Pl(N, coord_rho(i)))**2.d0 
     end do 
     coord_rho   (N) = 1.d0
     coord_weight(N) = tmp 

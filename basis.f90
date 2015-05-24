@@ -168,6 +168,7 @@ end subroutine diag
 ! ==================================================
 ! hamiltonian --------------------------------------
 subroutine PROC_H(l) 
+    use hamiltonian, only: coord_r, Poten_r 
     character(30), parameter  :: form_out = '(1A15, 10F9.3)'
     integer  (i4), intent(in) :: l 
     real     (dp) :: sign, tmp 
@@ -208,6 +209,10 @@ subroutine PROC_H(l)
 !     call check_norm ! for test 
     if(allocated(mat_H)) deallocate(mat_H)
     write(file_log, form_out) "Energy: ", (E(i), i = 1, 5) 
+
+!     do j = 1, N 
+!         write(30, *) coord_r(j), Poten_r(coord_r(j))
+!     end do 
 end subroutine PROC_H
 ! end hamiltonian ----------------------------------
 ! basis plot ---------------------------------------
@@ -234,7 +239,7 @@ end subroutine PROC_basis_plot
 ! end basis plot -----------------------------------
 ! bound states -------------------------------------
 subroutine PROC_bound(l)
-    use gsl_special, only: gsl_sf_bessel_ksl_scaled
+    use fgsl, only: fgsl_sf_bessel_ksl_scaled
     integer  (i1), parameter  :: file_bound = 101
     character(30), parameter  :: form_bound = '(2ES25.10)', form_out = '(1A15, 1I15, 2ES15.3)'
     integer  (i4), intent(in) :: l 
@@ -258,13 +263,13 @@ subroutine PROC_bound(l)
         do i = 1, m -1 
             Ei = E0 +dble(i)*dE 
             ka = (2.d0*Mass*(-Ei))**0.5d0*Bound
-            sb_ka = gsl_sf_bessel_ksl_scaled(l, ka)/exp(ka)*ka 
+            sb_ka = fgsl_sf_bessel_ksl_scaled(l, ka)/exp(ka)*ka 
             if(.not. l == 0) then 
-                tmp1 = dble(l)*gsl_sf_bessel_ksl_scaled(l, ka)/exp(ka)
-                tmp2 = dble(l +1)*gsl_sf_bessel_ksl_scaled(l +1_i4, ka)/exp(ka)
+                tmp1 = dble(l)*fgsl_sf_bessel_ksl_scaled(l, ka)/exp(ka)
+                tmp2 = dble(l +1)*fgsl_sf_bessel_ksl_scaled(l +1_i4, ka)/exp(ka)
             else if(l == 0) then 
                 tmp1 = 0.d0 
-                tmp2 = dble(l +1)*gsl_sf_bessel_ksl_scaled(l +1_i4, ka)/exp(ka)
+                tmp2 = dble(l +1)*fgsl_sf_bessel_ksl_scaled(l +1_i4, ka)/exp(ka)
             end if 
             diff_ka = -ka**2.d0/dble(2*l +1)*(tmp1 +tmp2)
             d2 = sb_ka -func_R(Ei)*(sb_ka +diff_ka)
