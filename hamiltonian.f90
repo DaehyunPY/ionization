@@ -1,10 +1,10 @@
 module hamiltonian
-    use kind_const
+    use kind_type
     use global
     implicit none
     ! coordnation
     real(dp), save, protected :: dr_pdrho
-    real(dp), save, protected, private :: dtheta, aAmp, bAmp, dAmp
+    real(dp), save, protected, private :: dtheta, aAmp, bAmp
     real(dp), save, allocatable, protected :: weight_grid(:)
     real(dp), save, allocatable, protected, private :: rho_grid(:), dshape_grid(:, :)
     ! potiontial
@@ -40,7 +40,7 @@ function Amp_grid(i)
     if(i == 0) then
         Amp_grid = 0.d0
     else if(i > 0) then
-        Amp_grid = dAmp*dble(i) +bAmp
+        Amp_grid = aAmp*dble(i) +bAmp
     end if
 end function Amp_grid
 ! end coordination ---------------------------------
@@ -93,13 +93,6 @@ function poten_r(r)
         poten_r = stat +pol
     end if
 end function poten_r
-! dipole -------------------------------------------
-function dipole_r(r, l)
-    real(dp), intent(in) :: r
-    integer(i4), intent(in) :: l
-    real(dp) :: dipole_r
-    dipole_r = r
-end function dipole_r
 ! end operator -------------------------------------
 
 
@@ -119,17 +112,17 @@ subroutine PROC_input
     use math_const, only: pi => math_pi
     use unit_const, only: other_e_eV, au_hartree
     character(60),  parameter :: &
-        form_laser = '(4/, 3(45X, 1F15.8, /), /)', &
-        form_poten = '(4/, 1(45X, 1I15, /), 3(45X, 1F15.8, /))'
+        form_laser = "(4/, 3(45X, 1F15.8, /), /)", &
+        form_poten = "(4/, 1(45X, 1I15, /), 3(45X, 1F15.8, /))"
     character(30),  parameter :: &
-        form_p1 = '(20/)', &
-        form_p2 = '( 2/, 3(45X, 1F15.8, /), 15/)', &
-        form_p3 = '( 7/, 3(45X, 1F15.8, /), 10/)', &
-        form_p4 = '(11/, 4(45X, 1F15.8, /),  5/)', &
-        form_p5 = '(16/, 3(45X, 1F15.8, /),  1/)'
+        form_p1 = "(20/)", &
+        form_p2 = "( 2/, 3(45X, 1F15.8, /), 15/)", &
+        form_p3 = "( 7/, 3(45X, 1F15.8, /), 10/)", &
+        form_p4 = "(11/, 4(45X, 1F15.8, /),  5/)", &
+        form_p5 = "(16/, 3(45X, 1F15.8, /),  1/)"
     character(60),  parameter :: &
-        form_cal = '(4/, 3(45X, 1F15.8, /), 5(45X, 1I15, /), /)', &
-        form_opt = '(6/, 3(45X, 6X, 1I15, /), /, /)'
+        form_cal = "(4/, 1(45X, 1F15.8, /), 5(45X, 1I15, /), /)", &
+        form_opt = "(6/, 3(45X, 6X, 1I15, /), /, /)"
     real(dp),  parameter :: eV_to_au = other_e_ev/au_hartree
 
     open(file_input, file = "input.data")
@@ -162,17 +155,15 @@ subroutine PROC_input
     end if
 
     ! calculation
-    read (file_input, form_cal) Ba, Bap, Bbeta, L, N, F, M, p3d
+    read (file_input, form_cal) Ba, L, N, F, M, p3d
     if(.not. Ba > 0.d0)    stop "Error hamiltonian #166: Check 'INNER REGION SIZE'. "
-    if(.not. Bap >= Ba)    stop "Error hamiltonian #167: Check 'OUTER REGION SIZE'. "
-    if(.not. Bbeta > 0.d0) stop "Error hamiltonian #168: Check 'PROPAGATE PARAMETER'. "
     if(.not. L >= 0)  stop "Error hamiltonian #403: Check 'MAXIMUM OF ANGULAR MOMANTUM L'. "
     if(.not. N >  0)  stop "Error hamiltonian #404: Check 'GRID NUMBER OF r COORDINATES'. "
     if(.not. F >= 0)  stop "Error hamiltonian #405: Check 'FLOQUET BLOCK NUMBER'. "
     if(.not. M >  0)  stop "Error hamiltonian #406: Check 'GRID NUMBER OF Amplitude COORDINATES'. "
     if(.not. p3d > 0) stop "Error hamiltonian #407: Check 'GRID NUMBER OF 3D PLOT'. "
     dtheta = pi/dble(p3d)
-    dAmp = (aAmp -bAmp)/dble(M)
+    aAmp = (aAmp -bAmp)/dble(M)
 
     ! option
     read (file_input, form_opt) op_ev, op_degree, op_aa
@@ -185,7 +176,7 @@ end subroutine PROC_input
 ! information --------------------------------------
 subroutine PROC_inform
     use unit_const, only: other_e_eV, au_hartree
-    character(30), parameter :: form_out = '(1A15, 1ES15.3)'
+    character(30), parameter :: form_out = "(1A15, 1ES15.3)"
     real     (dp), parameter :: au_to_eV = au_hartree/other_e_ev
 
     write(file_log, *) "================================================================="
@@ -193,7 +184,7 @@ subroutine PROC_inform
     write(file_log, *) "================================================================="
     write(file_log, *) " -------------------------------------------  ------------------ "
     write(file_log, *) " FREQUENCY                              [au] ", Freq
-    write(file_log, *) " MAXIMUM AMPLITUDE                      [au] ", aAmp
+    write(file_log, *) " MAXIMUM AMPLITUDE                      [au] ", Amp_grid(M)
     write(file_log, *) " MINIMUM AMPLITUDE                      [au] ", bAmp
     write(file_log, *) " - "
     write(file_log, *) " - "
@@ -277,7 +268,6 @@ subroutine PROC_inform
     write(file_log, *) "================================================================="
     write(file_log, *) " -------------------------------------------  ------------------ "
     write(file_log, *) " INNER REGION SIZE                      [au] ", Ba
-    write(file_log, *) " OUTER REGION SIZE                      [au] ", Bap
     write(file_log, *) " MAXIMUM OF ANGULAR MOMANTUM L           [1] ", L
     write(file_log, *) " GRID NUMBER OF r COORDINATES            [1] ", N
     write(file_log, *) " FLOQUET BLOCK NUMBER                    [1] ", F
@@ -288,8 +278,8 @@ subroutine PROC_inform
 end subroutine PROC_inform
 ! coordination -------------------------------------
 subroutine PORC_coord
-    use fgsl,     only: fgsl_sf_legendre_Pl
-    use mylinear, only: diag_sym_band
+    use fgsl,   only: fgsl_sf_legendre_Pl
+    use linear, only: diag_sym_band
     real(dp), allocatable :: X(:, :)
     real(dp) :: tmp
     real(qp) :: sum

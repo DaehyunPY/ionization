@@ -2,7 +2,7 @@ program main
     use kind_const
     use global
     use hamiltonian, only: PROC_input, PROC_inform, PORC_coord, PROC_hamiltonian_out
-    use basis,       only: PROC_H, PROC_basis_break, PROC_basis_out
+    use basis,       only: PROC_H, PROC_basis_out
     use boundary,    only: PROC_matching, PROC_boundary_out
 !     use inner,       only: PROC_inner_achive, PROC_inner_plot
 !     use outer,       only: PROC_outer_plot

@@ -1,54 +1,52 @@
 ============================================================
-LASER FIELD SCATTERING 
+LASER FIELD SCATTERING
 ============================================================
  -------------------------------------------  ------.------
- FREQUENCY                              [au]       0.2
- MAXIMUM AMPLITUDE                      [au]       0.1
- MINIMUM AMPLITUDE                      [au]       0.01  
+ FREQUENCY                              [au]       0.2  
+ MAXIMUM AMPLITUDE                      [au]       0.1 
+ MINIMUM AMPLITUDE                      [au]       0.01
  -
  -
 ============================================================
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- POTENTIAL TYPE                       [TYPE]       0 
- ELEMENT NUMBER                          [1]      18.
- POLARIZABILITY                         [au]      10.77  
- CUTOFF                                 [au]       1.76  
- [TYPE 0] EXAMPLE 
+ POTENTIAL TYPE                       [TYPE]       0
+ ELEMENT NUMBER                          [1]       1.
+ POLARIZABILITY                         [au]      10.77
+ CUTOFF                                 [au]       1.76
+ [TYPE 0] EXAMPLE
  [TYPE 1] COULOMB
  [TYPE 2] GELTMAN
     COEFFICIENT z0                      [au]      1.07
     COEFFICIENT z1                      [au]      1.07
     COEFFICIENT z2                      [au]      1.
  [TYPE 3] GREEN & YUKAWA
-    COUTION: You must set D or H, and delta is option. 
-    COEFFICIENT D                       [au]     -1  
-    COEFFICIENT H                       [au]      0.284 
+    COUTION: You must set D or H, and delta is option.
+    COEFFICIENT D                       [au]     -1
+    COEFFICIENT H                       [au]      0.284
     COEFFICIENT delta                   [au]     -1
  [TYPE 4] KYLSTRA & BUCKINGHAM
     COEFFICIENT A                       [au]      2.60505
     COEFFICIENT B                       [au]      2.08144
     COEFFICIENT alpha                   [au]      1.41
-    COEFFICIENT beta                    [au]      2.61 
- [TYPE 5] CHEN & NOUS 
-    COEFFICIENT alpha1                  [au]      3.04  
-    COEFFICIENT alpha2                  [au]     10.62  
-    COEFFICIENT alpha3                  [au]      1.83  
+    COEFFICIENT beta                    [au]      2.61
+ [TYPE 5] CHEN & NOUS
+    COEFFICIENT alpha1                  [au]      3.04
+    COEFFICIENT alpha2                  [au]     10.62
+    COEFFICIENT alpha3                  [au]      1.83
  -
  -
 ============================================================
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- INNER REGION SIZE                      [au]       1.0
- OUTER REGION SIZE                      [au]       3.0   
- PROPAGATE PARAMETER                     [1]       0.01 
- MAXIMUM OF ANGULAR MOMANTUM L           [1]       0 
- GRID NUMBER OF r COORDINATES            [1]      50
- FLOQUET BLOCK NUMBER                    [1]       7
- GRID NUMBER OF Amplitude COORDINATES    [1]     100 
- GRID NUMBER OF 3D PLOT                  [1]     200 
+ INNER REGION SIZE                      [au]       1.
+ MAXIMUM OF ANGULAR MOMANTUM L           [1]       0
+ GRID NUMBER OF r COORDINATES            [1]      50 
+ FLOQUET BLOCK NUMBER                    [1]      10 
+ GRID NUMBER OF Amplitude COORDINATES    [1]     100
+ GRID NUMBER OF 3D PLOT                  [1]     200
  -
  -
 ============================================================
@@ -56,8 +54,8 @@ OPTION
 ============================================================
  -------------------------------------------  ------.------
  [UNIT]
- COUTION: Default unit system is a.u. 
-    USE ENERGY UNIT eV                 [1/0]       0 
+ COUTION: Default unit system is a.u.
+    USE ENERGY UNIT eV                 [1/0]       0
     USE ANGULAR UNIT degree            [1/0]       0
     USE CROSS SECTION UNIT A^2         [1/0]       0
  [OUTPUT]

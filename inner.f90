@@ -1,7 +1,7 @@
 module inner
     ! use H, E, R, K, A matrix
     ! not use S matrix
-    use kind_const
+    use kind_type
     use global
     implicit none
     complex(dp),       allocatable, private, protected :: inner_a(:)
@@ -79,7 +79,7 @@ subroutine PROC_inner_plot
     unit_theta = 1_dp
     if(op_degree == 1) unit_theta = radian_to_degree
 
-    open(file_psi1, file = "output/inner_u_0.data")
+    open(file_psi1, file = "output/inner_u_0.d")
     sum = 0.d0
     do i = 1, N
         sum = inner_u(0, i)
@@ -87,7 +87,7 @@ subroutine PROC_inner_plot
     end do
     close(file_psi1)
 
-    open(file_psi2, file = "output/inner_psi.data")
+    open(file_psi2, file = "output/inner_psi.d")
     do i = 1, N, N/pr
         do j = 0, ptheta
             sum = 0.d0

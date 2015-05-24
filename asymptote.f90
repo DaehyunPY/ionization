@@ -67,7 +67,7 @@ subroutine PROC_CS_plot
     if(.not. allocated(outer_f)) allocate(outer_f(0:L))
     call mat_f(1_i4)
 
-    open(file_tcs, file = "output/total_cs.data")
+    open(file_tcs, file = "output/total_cs.d")
     sum = 0.0_dp
     k   = (2.0_dp*Mass*coord_E(1_i4))**0.50
     do i = 0, L
@@ -79,7 +79,7 @@ subroutine PROC_CS_plot
     write(file_log, form_out) "total sigma: ", aimag(tmp1)*unit_cs
     close(file_tcs)
 
-    open(file_dcs, file = "output/diff_cs.data")
+    open(file_dcs, file = "output/diff_cs.d")
     do j = 0, ptheta
         sum = 0.0_dp
         do i = 0, L
@@ -115,7 +115,7 @@ subroutine PROC_E_vs_CS_plot
     unit_cs = 1.0_dp
     if(op_aa == 1) unit_cs = (au_to_AA)**2_dp
 
-    open (file_cs, file = "output/energy_vs_cs.data")
+    open (file_cs, file = "output/energy_vs_cs.d")
     write(file_cs, form_tit) "=================================================="
     write(file_cs, form_tit) "CROSS SECTION OF SCATTERING ELECTRON"
     write(file_cs, form_tit) "=================================================="
@@ -199,7 +199,7 @@ subroutine PROC_E_vs_PS_plot
         PS(:, i) = PS(:, i) -dble(num)*pi
     end do
 
-    open (file_ph, file = "output/energy_vs_ps.data")
+    open (file_ph, file = "output/energy_vs_ps.d")
     write(file_ph, form_tit) "=================================================="
     write(file_ph, form_tit) "PHASE SHIFT OF SCATTERING ELECTRON"
     write(file_ph, form_tit) "=================================================="
@@ -213,7 +213,7 @@ subroutine PROC_E_vs_PS_plot
         write(file_ph, form_gen)
     end do
     close(file_ph)
-    open (file_lt, file = "output/energy_vs_lt.data")
+    open (file_lt, file = "output/energy_vs_lt.d")
     write(file_lt, form_tit) "=================================================="
     write(file_lt, form_tit) "LIFT-TIME OF SCATTERING ELECTRON"
     write(file_lt, form_tit) "=================================================="

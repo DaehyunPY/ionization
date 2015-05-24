@@ -1,5 +1,5 @@
 module basis
-    use kind_const
+    use kind_type
     use global
     implicit none
     real(dp), save, allocatable, protected :: H1(:, :), E1(:), EF(:)
@@ -39,11 +39,11 @@ function term_floquet(n)
     term_floquet = -dble(n)*Freq
 end function term_floquet
 ! dipole term --------------------------------------
-function term_dipole(i, l, m)
-    use hamiltonian, only: Amp_grid, r_grid, dipole_r
-    integer(i4), intent(in) :: i, l, m
+function term_dipole(i, m)
+    use hamiltonian, only: Amp_grid, r_grid
+    integer(i4), intent(in) :: i, m
     real(dp) :: term_dipole
-    term_dipole = 0.5d0*Amp_grid(m)*dipole_r(r_grid(i), l)
+    term_dipole = 0.5d0*Amp_grid(m)*r_grid(i)
 end function term_dipole
 ! end funciton -------------------------------------
 
@@ -61,7 +61,7 @@ end function term_dipole
 ! ==================================================
 ! single hamiltonian -------------------------------
 subroutine SUB_single(l)
-    use mylinear, only: diag_sym
+    use linear, only: diag_sym
     integer(i4), intent(in) :: l
     integer(i4) :: i, j
     H1(:, :) = 0.d0
@@ -77,7 +77,7 @@ subroutine SUB_single(l)
 end subroutine SUB_single
 ! floquet hamiltonian ------------------------------
 subroutine SUB_floquet(l, m)
-    use mylinear, only: diag_sym
+    use linear, only: diag_sym
     integer(i4), intent(in) :: l, m
     real(dp), pointer :: HF_p0(:), HF_p1(:, :, :, :), HF_p2(:, :)
     real(dp) :: tmp
@@ -91,14 +91,14 @@ subroutine SUB_floquet(l, m)
     HF   (1:N, -F:F, 1:N*(2*F +1))    => HF_p0(1:N*(2*F +1)*N*(2*F +1))
     HF_p1(1:N, -F:F, 1:N, -F:F)       => HF_p0(1:N*(2*F +1)*N*(2*F +1))
     HF_p2(1:N*(2*F +1), 1:N*(2*F +1)) => HF_p0(1:N*(2*F +1)*N*(2*F +1))
-    HF_p1(:, :, :, :) = 0.d0
 
     ! note: x1, floquet block, x2, floquet block
+    HF_p1(:, :, :, :) = 0.d0
     do k = -F, F
         tmp = term_floquet(k)
         do j = 1, N
             if(.not. k == -F) then
-                HF_p1(j, k -1, j, k) = term_dipole(j, l, m)
+                HF_p1(j, k -1, j, k) = term_dipole(j, m)
             end if
             do i = 1, j
                 HF_p1(i, k, j, k) = term_kinet(i, j)
@@ -140,6 +140,7 @@ end subroutine SUB_descale_HF
 
 
 
+
 ! ==================================================
 ! PROCESS
 ! ==================================================
@@ -171,17 +172,8 @@ subroutine PROC_H(l, m)
         call SUB_floquet(l, m)
         call SUB_descale_HF
         write(file_log, form_out2) "Dressed E: ", minval(EF(:)), maxval(EF(:))
-        ! todo: matrix size option (op_mat_f)
     end if
 end subroutine PROC_H
-! break --------------------------------------------
-subroutine PROC_basis_break
-    if(allocated(H1)) deallocate(H1)
-    if(allocated(E1)) deallocate(E1)
-    nullify(HF)
-    if(allocated(EF)) deallocate(EF)
-    ! todo: make break option (module basis)
-end subroutine PROC_basis_break
 ! out ----------------------------------------------
 subroutine PROC_basis_out
     if(allocated(H1)) deallocate(H1)

@@ -6,7 +6,7 @@ module global
     real(sp), parameter :: tiny1 = 1.d-16, tiny2 = 1.d-8, tiny3 = 1.d-4
     integer(i4), parameter :: maxloop = 1000
     ! input
-    real(dp), save :: Freq, Ba, Bap, Bbeta
+    real(dp), save :: Freq, Ba
     integer(i4), save :: L, N, F, M, p3d
     integer(i1), save :: op_ev, op_degree, op_aa
 end module

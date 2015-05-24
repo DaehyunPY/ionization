@@ -1,7 +1,7 @@
 module outer
     ! use K, A
     ! not use H, E, R, S
-    use kind_const
+    use kind_type
     use global
     implicit none
 contains
@@ -54,7 +54,7 @@ subroutine PROC_outer_plot
     if(op_degree == 1) unit_theta = radian_to_degree
     dr = Ra/dble(N)
 
-    open(file_psi1, file = "output/outer_u_0.data")
+    open(file_psi1, file = "output/outer_u_0.d")
     sum = 0.d0
     do i = 1, N, N/pr
         r = Ra +dr*dble(i)
@@ -63,7 +63,7 @@ subroutine PROC_outer_plot
     end do
     close(file_psi1)
 
-    open(file_psi2, file = "output/outer_psi.data")
+    open(file_psi2, file = "output/outer_psi.d")
     do i = 1, N, N/pr
         r = Ra +dr*dble(i)
         do j = 0, ptheta

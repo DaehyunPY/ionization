@@ -1,5 +1,5 @@
 module basis
-    use kind_const
+    use kind_type
     use global
     implicit none
     real(dp), save, allocatable, protected :: H1(:, :), P1(:, :), E1(:)
@@ -65,7 +65,7 @@ end function term_dipole
 ! ==================================================
 ! single hamiltonian -------------------------------
 subroutine SUB_single(l)
-    use mylinear, only: diag_sym
+    use linear, only: diag_sym
     integer(i4), intent(in) :: l
     integer(i4) :: i, j
     H1(:, :) = 0.d0
@@ -82,7 +82,7 @@ end subroutine SUB_single
 ! end single hamiltonian ---------------------------
 ! floquet hamiltonian ------------------------------
 subroutine SUB_iim
-    use mylinear, only: solve_band_vec
+    use linear, only: solve_band_vec
     real(dp) :: lambda1, lambda2, dlambda
     real(qp) :: sum
     real(dp), pointer :: &
@@ -291,8 +291,8 @@ subroutine PROC_basis_plot(l)
 
     write(ch, '(I3.3)') l
 
-        open(file_psi, file = "output/basis_u_"//ch//".data")
-        open(file_ene, file = "output/basis_energy_"//ch//".data")
+        open(file_psi, file = "output/basis_u_"//ch//".d")
+        open(file_ene, file = "output/basis_energy_"//ch//".d")
         write(file_psi, form_tit) "==========================================================================="
         write(file_psi, form_tit) "BASIS FUNCTION OF INNER REIGON IN THE ABSENCE OF THE FIELD"
         write(file_psi, form_tit) "==========================================================================="
@@ -322,8 +322,8 @@ subroutine PROC_basis_plot(l)
         j1 = loc(1)
         loc(:) = maxloc(E(:))
         j2 = loc(1)
-        open(file_psi, file = "output/dressed_u_"//ch//".data")
-        open(file_ene, file = "output/dressed_energy_"//ch//".data")
+        open(file_psi, file = "output/dressed_u_"//ch//".d")
+        open(file_ene, file = "output/dressed_energy_"//ch//".d")
         write(file_psi, form_tit) "==========================================================================="
         write(file_psi, form_tit) "DRESSED BASIS FUNCTION OF INNER REIGON"
         write(file_psi, form_tit) "==========================================================================="
