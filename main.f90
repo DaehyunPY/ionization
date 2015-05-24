@@ -1,141 +1,174 @@
 program main
-    use kind_const
     use global
-    use hamiltonian, only: PROC_input, PROC_inform, PORC_coord, PROC_hamiltonian_out
-    use basis,       only: PROC_H, PROC_basis_out
-    use boundary,    only: PROC_matching, PROC_boundary_out
-!     use inner,       only: PROC_inner_achive, PROC_inner_plot
-!     use outer,       only: PROC_outer_plot
-!     use asymptote,   only: PROC_CS_plot, PROC_E_vs_CS_plot, PROC_E_vs_PS_plot
+    use hamiltonian, only: process_coord
+    use inner, only: process_basis_H1, process_basis_HF
+    use outer, only: process_find_ground, process_find_bound
     implicit none
-    character(30), parameter :: &
-        form_step1 = "(1A20, 1I5)", &
-        form_step2 = "(1A40, 1I8, 1A4, 1I8)"
-    character(60), parameter :: &
-        form_time1 = "(1A25, 5X, 1I2.2, ' hr ', 1I2.2, ' min ', 1I2.2, ' sec ')", &
-        form_time2 = "(1A15,     1I2.2, ' hr ', 1I2.2, ' min ', 1I2.2, ' sec ')"
-    real     (sp) :: tt, t0, t1, t2
-    integer  (i4) :: i, j, time, hr, min, sec
+    integer :: m
+    integer, pointer :: N
 
+    N => amp_N
+    ! note: 1.1 read input-file
+    call process_input
+    print *, "Reading input file has finished. "
+    ! note: 1.2 inform data
+    ! note: 1.3 make coordinates & hamiltonian
+    call process_coord
+    print *, "Building coordinates has finished. "
 
-! ==================================================
-! INPUT
-! ==================================================
-    call cpu_time(tt)
-    call cpu_time(t1)
-    write(*, *) "Reading input file..."
+    ! note: 2.1 no-laser calculation
+    ! note: 2.1.1 inner-region basis
+    call process_basis_H1
+    print *, "Calculating basis of H1 has finished. "
+    ! note: 2.1.2 find first bound-state
+    call process_find_ground
+    print *, "Finding ground state has finished. "
+    ! note: 2.1.3 plot first bound-state function
 
-    ! note: 1.1. input parameters
-    call PROC_input
-    write(file_log, *) "[PROCESS INPUT]"
-    write(file_log, *)
-
-        ! note: 1.2. inform input parameters
-        call PROC_inform
-
-        ! note: 1.3. make coordination system
-        call PORC_coord
-        write(file_log, *)
-    call cpu_time(t2)
-    time = t2 -t1
-    hr = time/3600
-    min = (time -hr*3600)/60
-    sec = (time -hr*3600 -min*60)
-    write(file_log, form_time1) "PROCESS RUNNING TIME: ", hr, min, sec
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(*, *) "Reading over."
-
-
-! ==================================================
-! CALCULATE
-! ==================================================
-    call cpu_time(t0)
-    write(*, *) "Calculating..."
-    write(file_log, *) "[PROCESS CALCULATE]"
-    write(file_log, *)
-
-    ! note: 2.1. angular momantum loop
-    do i = 0, L
-        write(file_log, form_step1) "ANGULAR MOMANTUM ", i
-        write(file_log, *)
-
-        ! note: 2.2. laser amplitude loop
-        do j = 0, M
-            call cpu_time(t1)
-            write(file_log, form_step2) "STEP ", j, "of", M
-
-            ! note: 2.3. calculate inner region basis
-            call PROC_H(i, j)
-
-            ! note: 2.4. matching boundary conditions
-            call PROC_matching(j, i)
-            call cpu_time(t2)
-            time = t2 -t1
-            hr = time/3600
-            min = (time -hr*3600)/60
-            sec = (time -hr*3600 -min*60)
-            write(file_log, form_time2) "RUNNING TIME: ", hr, min, sec
-            write(file_log, *)
-        end do
+    ! note: 2.2 laser calculation
+    do m = 0, N
+        print *, m, N
+        ! note: 2.2.1 inner-region basis
+        call process_basis_HF(m)
+        print *, "Calculating basis of HF has finished. "
+        ! note: 2.1.2 find complex-energy
+        call process_find_bound
+        print *, "Finding bound state has finished. "
     end do
-    call cpu_time(t2)
-    time = t2 -t0
-    hr = time/3600
-    min = (time -hr*3600)/60
-    sec = (time -hr*3600 -min*60)
-    write(file_log, form_time1) "PROCESS RUNNING TIME: ", hr, min, sec
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(*, *) "Calculating over."
+    print *, "Program has finished. "
+
+contains
 
 
-! ==================================================
-! PLOT
-! ==================================================
-    call cpu_time(t1)
-    write(*, *) "Ploting..."
-    write(file_log, *) "[PROCESS PLOT]"
-    write(file_log, *)
-
-        ! NOTE: 3.1. wave function
-
-        ! NOTE: 3.2. cross section
-        write(file_log, *)
-    call cpu_time(t2)
-    time = t2 -t1
-    hr = time/3600
-    min = (time -hr*3600)/60
-    sec = (time -hr*3600 -min*60)
-    write(file_log, form_time1) "PROCESS RUNNING TIME: ", hr, min, sec
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(file_log, *)
-    write(*, *) "Ploting over."
 
 
-! ==================================================
-! OVER
-! ==================================================
-    write(file_log, *) "PROGRAM OVER"
-    write(file_log, *)
-    call cpu_time(t2)
-    time = t2 -tt
-    hr = time/3600
-    min = (time -hr*3600)/60
-    sec = (time -hr*3600 -min*60)
-    write(file_log, form_time1) "PROGRAM RUNNING TIME: ", hr, min, sec
-    write(file_log, *)
-    call PROC_boundary_out
-    call PROC_basis_out
-    call PROC_hamiltonian_out
-    write(*, *) "Program over."
+
+
+
+
+
+! ==============================================================================
+! PROCESS: process_input
+! ==============================================================================
+    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    subroutine process_input ! :::::::::::::::::::::::::::::::::::::::::::::::::
+        ! It reads a input file and check if the values of the file are valid.
+        use hamiltonian, only: freq, amp_max, amp_min, poten_type, r_inner
+        character(*), parameter :: check = "Check your input value: "
+        character(1) :: dummy
+        logical :: op_input, op_log
+
+        inquire(file="input.data", exist = op_input)
+        if(op_input == .true.) then
+            open(file_input, file = "input.data")
+        end if
+
+        read(file_input, *) ! ===
+        read(file_input, *) ! laser
+        read(file_input, *) ! ===
+        read(file_input, *) ! ---
+        read(file_input, *) dummy, freq
+        read(file_input, *) dummy, amp_max
+        read(file_input, *) dummy, amp_min
+        read(file_input, *) ! -
+        read(file_input, *) ! -
+        if(.not. freq > 0.d0) stop check//"FREQUENCY. "
+        if(.not. amp_max > 0.d0) stop check//"MAXIMUM AMPLITUDE. "
+        if(.not. (amp_min >= 0.d0 .and. amp_min < amp_max)) stop check//"MINIMUM AMPLITUDE. "
+
+        read(file_input, *) ! ===
+        read(file_input, *) ! potential
+        read(file_input, *) ! ===
+        read(file_input, *) ! ---
+        read(file_input, *) dummy, poten_type
+        read(file_input, *) ! -
+        read(file_input, *) ! -
+        if(.not. poten_type == 0) stop check//"POTENTIAL TYPE. "
+
+        read(file_input, *) ! ===
+        read(file_input, *) ! calculation
+        read(file_input, *) ! ===
+        read(file_input, *) ! ---
+        read(file_input, *) dummy, r_inner
+        read(file_input, *) dummy, r_N
+        read(file_input, *) dummy, amp_N
+        read(file_input, *) dummy, floq_N
+        read(file_input, *) ! -
+        read(file_input, *) ! -
+        if(.not. r_inner > 0.d0) stop check//"INNER REGION SIZE. "
+        if(.not. r_N > 0) stop check//"GRID NUMBER OF r COORDINATES. "
+        if(.not. amp_N > 0) stop check//"GRID NUMBER OF Amplitude COORDINATES. "
+        if(.not. floq_N >= 0) stop check//"NUMBER OF FLOQUET BLOCK. "
+
+        read(file_input, *) ! ===
+        read(file_input, *) ! option
+        read(file_input, *) ! ===
+        read(file_input, *) ! ---
+        read(file_input, *) ! unit
+        read(file_input, *) !
+        read(file_input, *) ! output
+        read(file_input, *) dummy, op_log
+        read(file_input, *) ! -
+        read(file_input, *) ! -
+
+        if(op_input == .true.) then
+            close(file_input)
+        end if
+        if(op_log == .true.) then
+            open(file_log, file = "log.data")
+        end if
+    end subroutine process_input ! :::::::::::::::::::::::::::::::::::::::::::::
+    ! ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+! END PROCESS ------------------------------------------------------------------
+
 end program main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
