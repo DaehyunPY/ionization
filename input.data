@@ -2,7 +2,7 @@
 LASER FIELD
 ============================================================
  -------------------------------------------  ------.------
- AMPLITUDE                              [au]       0.1
+ AMPLITUDE                              [au]       0.06
  FREQUENCY                              [au]       0.2
  -
  -
@@ -14,17 +14,17 @@ PARTICLE
  CHARGE                                 [au]      -1.
  SPIN                                    [1]       0.5
  COUTION: You must set which one unit, au or eV. 
- SCATTERING ENERGY                      [au]      -1.
-                                        [eV]      20.
+ SCATTERING ENERGY                      [au]       0.2
+                                        [eV]      -1.
  -
  -
 ============================================================
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- TYPE                                 [TYPE]       3  
- ELEMENT NUMBER                          [1]      10.
- POLARIZABILITY                         [au]       2.68  
+ TYPE                                 [TYPE]       0 
+ ELEMENT NUMBER                          [1]      18.
+ POLARIZABILITY                         [au]      10.77  
  CUTOFF                                 [au]       1.76  
  [TYPE 0] EXAMPLE 
  [TYPE 1] COULOMB
@@ -34,9 +34,9 @@ POTENTIAL
     COEFFICIENT z2                      [au]      1.
  [TYPE 3] GREEN & YUKAWA
     COUTION: You must set D or H, and delta is option. 
-    COEFFICIENT D                       [au]      0.5   
-    COEFFICIENT H                       [au]      1.256 
-    COEFFICIENT delta                   [au]      0.9707407064
+    COEFFICIENT D                       [au]     -1  
+    COEFFICIENT H                       [au]      0.284 
+    COEFFICIENT delta                   [au]     -1
  [TYPE 4] KYLSTRA & BUCKINGHAM
     COEFFICIENT A                       [au]      2.60505
     COEFFICIENT B                       [au]      2.08144
@@ -52,8 +52,9 @@ POTENTIAL
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- BOUNDARY SIZE                          [au]      30.
- MAXIUM OF ANGULAR MOMANTUM L            [1]       3 
+ INNER REGION SIZE                      [au]       1.
+ OUTER REGION SIZE                      [au]       1.
+ MAXIUM OF ANGULAR MOMANTUM L            [1]       0 
  GRID NUMBER OF r COORDINATES            [1]      50  
  FLOQUET NUMBER                          [1]      30
  GRID NUMBER OF Energy COORDINATES       [1]    1000
@@ -67,20 +68,20 @@ OPTION
  -------------------------------------------  ------.------
  [UNIT]
  COUTION: Default unit system is a.u. 
-    USE ENERGY UNIT eV                 [Y/N]       YES  
-    USE ANGULAR UNIT degree            [Y/N]       YES 
-    USE CROSS SECTION UNIT A^2         [Y/N]       YES  
+    USE ENERGY UNIT eV                 [1/0]       0 
+    USE ANGULAR UNIT degree            [1/0]       0
+    USE CROSS SECTION UNIT A^2         [1/0]       0
  [OUTPUT 1] GENERAL 
-    BASIS FUNCTION                     [Y/N]       NO 
-    BOUND STATES ENERGY & FUNCTION     [Y/N]       NO 
+    BASIS FUNCTION                     [1/0]       1
+    BOUND STATES ENERGY & FUNCTION     [1/0]       0
  [OUTPUT 2] POTENTIAL SCATTERING 
-    DIFFERCIAL CROSS SECTION           [Y/N]       NO   
-    INNER REGION WAVE FUNCTION         [Y/N]       NO 
-    OUTER REGION WAVE FUNCTION         [Y/N]       NO 
+    DIFFERCIAL CROSS SECTION           [1/0]       1
+    INNER REGION WAVE FUNCTION         [1/0]       0
+    OUTER REGION WAVE FUNCTION         [1/0]       0
  [OUTPUT 3] RESONANCE 
  COUTION: OUTPUT 1 & 2 option would be invalid. 
  COUTION: KINETIC ENERGY value would be maxium one. 
-    KINETIC ENERGY vs CROSS SECTION    [Y/N]       YES
-    KINETIC ENERGY vs PHASE SHIFT      [Y/N]       YES  
+    KINETIC ENERGY vs CROSS SECTION    [1/0]       0
+    KINETIC ENERGY vs PHASE SHIFT      [1/0]       0
  -
  -
