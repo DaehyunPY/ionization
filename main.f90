@@ -1,17 +1,14 @@
 program main
     use kind_type
     use global
-    use hamiltonian, only: coord_E
-    use hamiltonian, only: PROC_input, PROC_inform, PORC_coord, PROC_Poten_plot, PROC_out 
+    use hamiltonian, only: coord_E, PROC_input, PROC_inform, PORC_coord, PROC_Poten_plot, PROC_out 
     use basis,       only: PROC_H, PROC_basis_plot
     use boundary,    only: PROC_boundary_mat
     use inner,       only: PROC_inner_achive, PROC_inner_plot
-    use outer,       only: PROC_CS_achive, PROC_CS_plot, PROC_outer_plot, PROC_E_vs_CS_plot
+    use outer,       only: PROC_outer_plot
+    use inf,         only: PROC_CS_plot, PROC_CS_achive, PROC_PS_achive, PROC_E_vs_CS_plot, PROC_E_vs_PS_plot
     implicit none
-    character(30), parameter :: & 
-        form_round = '(1A20, 1I10, 1A20, 1F10.3)', &
-        form_time1 = '(1A25, 5X, 1ES15.3)', &
-        form_time2 = '(1A15, 1ES15.3)'
+    character(30), parameter :: form_out = '(1A25, 5X, 1ES15.3)'
     real     (sp) :: tt, t0, t1, t2 
     integer  (i4) :: i, j 
 
@@ -29,7 +26,7 @@ program main
         end if
         write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t1 
+    write(file_log, form_out) "PROCESS RUNNING TIME: ", t2 -t1 
     write(file_log, *) 
     write(file_log, *) 
     write(file_log, *) 
@@ -45,27 +42,29 @@ program main
         Scatt = coord_E(j)
         do i = 0, L 
             call cpu_time(t1)
-            write(file_log, form_round) "ANGULAR MOMANTUM ", i, "SCATTERING ENERGY ", coord_E(j)
+            write(file_log, *) "ROUND", i, coord_E(j)
                 call PROC_H(i) 
                 if(op_basis == "Y") &
                 call PROC_basis_plot(i)
                 if((op_dcs == "Y" .or. op_inner == "Y" .or. op_outer == "Y") .or. &
-                    (op_tcs == "Y" .or. op_phase == "Y" .or. op_lt == "Y")) & 
+                    (op_tcs == "Y" .or. op_ps == "Y")) & 
                 call PROC_boundary_mat(i) 
                 if(op_inner == "Y") & 
                 call PROC_inner_achive(i)
             call cpu_time(t2) 
-            write(file_log, form_time2) "RUNNING TIME: ", t2 -t1
+            write(file_log, form_out) "RUNNING TIME: ", t2 -t1
             write(file_log, *) 
         end do 
         if(op_basis == "Y") & 
         write(file_log, *) "Basis function is ploted."
-        if(op_tcs == "Y" .or. op_phase == "Y" .or. op_lt == "Y") & 
+        if(op_tcs == "Y") &
         call PROC_CS_achive(j)
+        if(op_ps  == "Y") &
+        call PROC_PS_achive(j)
         write(file_log, *)
     end do 
     call cpu_time(t2) 
-    write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t0 
+    write(file_log, form_out) "PROCESS RUNNING TIME: ", t2 -t0 
     write(file_log, *) 
     write(file_log, *) 
     write(file_log, *) 
@@ -93,11 +92,16 @@ program main
             call PROC_E_vs_CS_plot
             write(file_log, *) "Energy vs Cross Section function is ploted."
         end if
-!         if(op_phase == "Y") 
-!         if(op_lt    == "Y")
+        if(op_ps    == "Y") then 
+            write(file_log, *)
+            call PROC_E_vs_PS_plot
+            write(file_log, *)
+            write(file_log, *) "Energy vs Phase Shift function is ploted."
+            write(file_log, *) "Energy vs Lifetime function is ploted."
+        end if             
         write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t1 
+    write(file_log, form_out) "PROCESS RUNNING TIME: ", t2 -t1 
     write(file_log, *)
     write(file_log, *)
     write(file_log, *)
@@ -108,7 +112,7 @@ program main
     write(file_log, *) "PROGRAM OVER"
     write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_time1) "PROGRAM RUNNING TIME: ", tt -t1 
+    write(file_log, form_out) "PROGRAM RUNNING TIME: ", tt -t1 
     write(file_log, *)
     call PROC_out 
     write(*, *) "Program over."

@@ -1,13 +1,4 @@
 ============================================================
-LASER FIELD
-============================================================
- -------------------------------------------  ------.------
- AMPLITUDE                              [au]       1.
- FREQUENCY                              [au]       1.
- ABSORBED PHOTON NUMBER                  [1]       2
- -
- -
-============================================================
 PARTICLE
 ============================================================
  -------------------------------------------  ------.------
@@ -15,19 +6,19 @@ PARTICLE
  CHARGE                                 [au]      -1.
  SPIN                                    [1]       0.5
  COUTION: You must set which one unit, au or eV. 
- SCATTERING ENERGY                      [au]      -1.
-                                        [eV]       3.
+ SCATTERING ENERGY                      [au]       5.
+                                        [eV]      -1.
  -
  -
 ============================================================
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- TYPE                                 [TYPE]       1  
- ELEMENT NUMBER                          [1]       1.
+ TYPE                                 [TYPE]       0 
+ ELEMENT NUMBER                          [1]      18.
  POLARIZABILITY                         [au]      10.77  
  CUTOFF                                 [au]       1.76  
- [TYPE 0] EXAMPLE 2.6.1 
+ [TYPE 0] EXAMPLE 
  [TYPE 1] COULOMB
  [TYPE 2] GELTMAN
     COEFFICIENT z0                      [au]      1.07
@@ -53,11 +44,10 @@ POTENTIAL
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- BOUNDARY SIZE                          [au]      30.
- MAXIUM OF QUANTUM NUMBER L              [1]       0 
- GRID NUMBER OF r COORDINATES            [1]      50  
- FLOQUET NUMBER                          [1]       3
+ BOUNDARY SIZE                          [au]       1.
+ GRID NUMBER OF r COORDINATES            [1]      50
  GRID NUMBER OF Energy COORDINATES       [1]    1000
+ MAXIUM OF QUANTUM NUMBER L              [1]       0  
  3D PLOT NUMBER OF r COORDINATES         [1]     200 
  3D PLOT NUMBER OF theta COORDINATES     [1]     200 
  -
@@ -68,20 +58,19 @@ OPTION
  -------------------------------------------  ------.------
  [UNIT]
  COUTION: Default unit system is a.u. 
-    USE ENERGY UNIT eV                 [Y/N]       YES  
-    USE ANGULAR UNIT degree            [Y/N]       YES  
-    USE CROSS SECTION UNIT A^2         [Y/N]       YES 
+    USE ENERGY UNIT eV                 [Y/N]       NO   
+    USE ANGULAR UNIT degree            [Y/N]       NO 
+    USE CROSS SECTION UNIT A^2         [Y/N]       NO  
  [OUTPUT]
     POTENTIAL FUNCTION                 [Y/N]       NO 
-    BASIS FUNCTION                     [Y/N]       YES 
-    CROSS SECTION FUNCTION             [Y/N]       YES
+    BASIS FUNCTION                     [Y/N]       NO 
+    CROSS SECTION FUNCTION             [Y/N]       NO 
     INNER REGION WAVE FUNCTION         [Y/N]       NO 
     OUTER REGION WAVE FUNCTION         [Y/N]       NO 
  [SPECIAL CALCULATION]
  COUTION: OUTPUT FILE option would be invalid. 
  COUTION: KINETIC ENERGY value would be maxium one. 
-    KINETIC ENERGY vs CROSS SECTION    [Y/N]       NO  
-    KINETIC ENERGY vs PHASE            [Y/N]       NO 
-    KINETIC ENERGY vs LIFETIME         [Y/N]       NO 
+    KINETIC ENERGY vs CROSS SECTION    [Y/N]       YES 
+    KINETIC ENERGY vs PHASE SHIFT      [Y/N]       YES  
  -
  -

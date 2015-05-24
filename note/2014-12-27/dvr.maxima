@@ -1,0 +1,65 @@
+/*　d/dx, simple generic DVR */
+/* 方程式 */
+
+	/* 変数 宣言 */
+	a : 0;
+	dx;
+	assume( dx > 0 );
+	N;
+	assume( N > 0 );
+
+	/* 座標、関数 宣言 */
+	x(i) := a +dx*i;
+	b : dx*N +a;
+	phi(n, x) := (2/(b-a))**(1/2) * sin((n)*%pi*(x-a)/(b-a)); /* (n) */
+	define( dphi(n, x), diff( phi(n, x), x));
+
+	/* 変数 変換 */
+	T_ij : dx* sum( phi(n, x(i)) * dphi(n, x(j)), n, 1, N -1);
+	f1: A = (i -j);
+	f2: B = (i +j);
+	assume ( B >= 0);
+	solve ( [f1, f2], [i, j]);
+	T_ab : ev( T_ij, %);
+	trigreduce(%, A);
+	trigreduce(%, B);
+	trigsimp(%);
+	T_ab : %;
+
+
+/* 三角関数を指数関数に直して解く */
+simpsum: ture;
+
+	/* t_ab : 0 でないとき */
+	exp( %i * %pi/N * (n) * x); /* (n) */
+	sum( %, n, 1, N -1);
+	diff( %, x); 
+	realpart(%);
+	trigsimp(%);
+	trigreduce(%);
+	trigsimp(%);
+	define( t_ab(x), %);
+
+	/* t_ab : 0 のとき */
+	t_ab_zero : 0;
+
+
+/* 解 */
+
+	/* 場合分け 1 */
+	case1 : -(t_ab(A)+t_ab(B))/(dx*N); 
+	define(T1(N), case1);
+	limit(T1(N), N, inf);
+	case1_answer: %;
+
+	/* 場合分け 2 */
+	case2 : -(t_ab_zero +t_ab(B))/(dx*N); 
+	define(T2(N), case2);
+	limit(T2(N), N, inf);
+	case2_answer: %;
+
+	/* 出力 Fortran, Latex */
+	fortran( ev( case1_answer, f1, f2));
+	fortran( ev( case2_answer, f1, f2));
+	tex( ev( case1_answer, f1, f2));
+	tex( ev( case2_answer, f1, f2));
