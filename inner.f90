@@ -1,4 +1,6 @@
 module inner
+    ! use H, E, R, K, A matrix 
+    ! not use S matrix 
     use kind_type 
     use global 
     implicit none
@@ -7,24 +9,30 @@ module inner
 contains 
     
 
+! ==================================================
+! COEFFICIENT
+! ==================================================
+! inner coefficient --------------------------------
 subroutine inner_coeff(l)
     use math_const,  only: i => math_i 
     use gsl_special, only: gsl_sf_bessel_jsl, gsl_sf_bessel_ysl
+    use hamiltonian, only: coord_E
     integer(i4), intent(in) :: l 
     real   (dp) :: ka, sb_j, sb_y, tmp2 
     complex(dp) :: tmp1 
     integer(i4) :: j
 
-    ka = (2.d0*Mass*Scatt)**0.5d0*ra
+    ka = (2.d0*Mass*coord_E(1_i4))**0.5d0*Bound
     sb_j = gsl_sf_bessel_jsl(l, ka)
     sb_y = gsl_sf_bessel_ysl(l, ka)
     
     tmp1 = A(l)*(sb_j -K(l)*sb_y)
     do j = 1, N 
-        tmp2       = H(j, N)/(2.d0*Mass*(E(j) -Scatt))
+        tmp2       = H(j, N)/(2.d0*Mass*(E(j) -coord_E(1_i4)))
         inner_a(j) = tmp1*tmp2/R(l)
     end do     
 end subroutine inner_coeff
+
 
 
 

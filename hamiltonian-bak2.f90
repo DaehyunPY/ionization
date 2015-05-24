@@ -21,7 +21,7 @@ contains
 function coord_r(i) 
     integer(i4), intent(in) :: i
     real   (dp) :: coord_r
-    coord_r = dr_p_drho*coord_rho(i) +Bound/2.d0 
+    coord_r = dr_p_drho*coord_rho(i) +ra/2.d0 
 end function coord_r
 ! theta --------------------------------------------
 function coord_theta(i)
@@ -210,14 +210,14 @@ subroutine PROC_input
     else if(ty == 5) then 
         read(file_input, form_p5) alpha1, alpha2, alpha3
     end if 
-    read (file_input, form_cal) Bound, L, N, F, M, pr, ptheta
-    if(.not. Bound  >  0.d0) stop "Error #058: check 'CALCULATION - BOUNDARY SIZE'"
-    if(.not. L      >= 0)    stop "Error #059: check 'CALCULATION - MAXIUM OF ANGULAR MOMANTUM L'"
-    if(.not. N      >  0)    stop "Error #060: check 'CALCULATION - GRID NUMBER OF r COORDINATES'"
-    if(.not. F      >= 0)    stop "Error #061: check 'CALCULATION - FLOQUET NUMBER'"
-    if(.not. M      >  0)    stop "Error #062: check 'CALCULATION - GRID NUMBER OF Energy COORDINATES'"
-    if(.not. pr     >  0)    stop "Error #063: check 'CALCULATION - 3D PLOT NUMBER OF r COORDINATES'"
-    if(.not. ptheta >  0)    stop "Error #064: check 'CALCULATION - 3D PLOT NUMBER OF theta COORDINATES'"
+    read (file_input, form_cal) ra, L, N, F, M, pr, ptheta
+    if(.not. ra >  0.d0)  stop "Error #058: check 'CALCULATION - BOUNDARY SIZE'"
+    if(.not. L  >= 0)     stop "Error #059: check 'CALCULATION - MAXIUM OF ANGULAR MOMANTUM L'"
+    if(.not. N  >  0)     stop "Error #060: check 'CALCULATION - GRID NUMBER OF r COORDINATES'"
+    if(.not. F  >= 0)     stop "Error #061: check 'CALCULATION - FLOQUET NUMBER'"
+    if(.not. M  >  0)     stop "Error #062: check 'CALCULATION - GRID NUMBER OF Energy COORDINATES'"
+    if(.not. pr >  0)     stop "Error #063: check 'CALCULATION - 3D PLOT NUMBER OF r COORDINATES'"
+    if(.not. ptheta > 0)  stop "Error #064: check 'CALCULATION - 3D PLOT NUMBER OF theta COORDINATES'"
     read (file_input, form_opt) & 
         op_ev, op_degree, op_aa, &
         op_poten, op_basis, op_dcs, op_inner, op_outer, &
@@ -242,8 +242,17 @@ subroutine PROC_input
     if(.not. allocated(coord_rho))    allocate(coord_rho   (0:N))
     if(.not. allocated(coord_weight)) allocate(coord_weight(0:N))
     if(.not. allocated(coord_dshape)) allocate(coord_dshape(0:N, 0:N))
+    if(op_basis == "N" .and. op_inner == "N") then 
+        if(.not. allocated(H)) allocate(H(1:N, N:N))
+!         if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, N:N)) ! for floquet
+    else if(op_basis == "Y" .or. op_inner == "Y") then 
+        if(.not. allocated(H)) allocate(H(1:N, 1:N))
+!         if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, 1:N)) ! for floquet
+    end if 
+    if(.not. allocated(E)) allocate(E(1:N))
+!     if(.not. allocated(E)) allocate(E(1:(2*F +1)*N)) ! for floquet
 
-    if(.not. (op_tcs == "Y" .or. op_ps == "Y")) then 
+    if(op_tcs == "N" .and. op_ps == "N") then 
         M  = 1
         dE = Scatt
     else if(op_tcs == "Y" .or. op_ps == "Y") then 
@@ -367,7 +376,7 @@ subroutine PROC_inform
     write(file_log, *) "CALCULATION"
     write(file_log, *) "================================================================="
     write(file_log, *) " -------------------------------------------  ------------------ "
-    write(file_log, *) " BOUNDARY SIZE                          [au] ", Bound 
+    write(file_log, *) " BOUNDARY SIZE                          [au] ", ra 
     write(file_log, *) " MAXIUM OF ANGULAR MOMANTUM L            [1] ", L 
     write(file_log, *) " GRID NUMBER OF r COORDINATES            [1] ", N 
     write(file_log, *) " FLOQUET NUMBER                          [1] ", F 
@@ -403,7 +412,7 @@ subroutine PORC_coord
     end do 
     coord_rho   (n) = 1.d0
     coord_weight(n) = tmp 
-    dr_p_drho = Bound/(coord_rho(n) -coord_rho(0))
+    dr_p_drho = ra/(coord_rho(n) -coord_rho(0))
     if(allocated(X)) deallocate(X) 
 
     do i = 0, n 
@@ -454,7 +463,7 @@ subroutine PROC_Poten_plot
 end subroutine PROC_Poten_plot
 ! end potential plot -------------------------------
 ! out ----------------------------------------------
-subroutine PROC_prog_out 
+subroutine PROC_out 
     if(allocated(coord_rho))    deallocate(coord_rho)
     if(allocated(coord_weight)) deallocate(coord_weight)
     if(allocated(coord_dshape)) deallocate(coord_dshape)
@@ -465,6 +474,6 @@ subroutine PROC_prog_out
     if(allocated(S)) deallocate(S)
     if(allocated(A)) deallocate(A)
     close(file_log)
-end subroutine PROC_prog_out 
+end subroutine PROC_out 
 ! end out ------------------------------------------
 end module hamiltonian 

@@ -1,18 +1,25 @@
 module outer
+    ! use K, A 
+    ! not use H, E, R, S
     use kind_type
     use global 
     implicit none
 contains 
     
 
+! ==================================================
+! COEFFICIENT
+! ==================================================
+! outer coefficient --------------------------------
 function outer_u(l, r)
     use gsl_special, only: gsl_sf_bessel_jsl, gsl_sf_bessel_ysl
+    use hamiltonian, only: coord_E
     integer(i4), intent(in) :: l 
     real   (dp), intent(in) :: r 
     real   (dp) :: kr, sb_j, sb_y
     complex(dp) :: outer_u
 
-    kr = (2.0_dp*Mass*Scatt)**0.5_dp*r
+    kr = (2.0_dp*Mass*coord_E(1_i4))**0.5_dp*r
     sb_j = gsl_sf_bessel_jsl(l, kr)
     sb_y = gsl_sf_bessel_ysl(l, kr)
 
@@ -45,12 +52,12 @@ subroutine PROC_outer_plot
 
     unit_theta = 1.0_dp 
     if(op_degree == "Y") unit_theta = radian_to_degree
-    dr = ra/dble(N)
+    dr = Bound/dble(N)
 
     open(file_psi1, file = "output/outer_u_0.d")
     sum = 0.0_dp 
     do i = 1, N, N/pr 
-        r = ra +dr*dble(i)
+        r = Bound +dr*dble(i)
         sum = outer_u(0_i4, r)
         write(file_psi1, form_psi) r, dble(abs(sum)**2.0_dp)
     end do 
@@ -58,7 +65,7 @@ subroutine PROC_outer_plot
 
     open(file_psi2, file = "output/outer_psi.d")
     do i = 1, N, N/pr 
-        r = ra +dr*dble(i)
+        r = Bound +dr*dble(i)
         do j = 0, ptheta
             sum = 0.0_dp 
             do k = 0, L 

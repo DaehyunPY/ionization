@@ -68,7 +68,7 @@ OPTION
  [UNIT]
  COUTION: Default unit system is a.u. 
     USE ENERGY UNIT eV                 [Y/N]       NO   
-    USE ANGULAR UNIT degree            [Y/N]       YES  
+    USE ANGULAR UNIT degree            [Y/N]       NO   
     USE CROSS SECTION UNIT A^2         [Y/N]       NO  
  [OUTPUT]
     POTENTIAL FUNCTION                 [Y/N]       NO 

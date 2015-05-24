@@ -2,7 +2,7 @@ module basis
     use kind_type 
     use global 
     implicit none
-    real(dp), allocatable, private, protected :: mat_H(:, :)
+    real(dp), pointer, private, protected :: mat_H(:, :)
 contains
 
 
@@ -34,21 +34,21 @@ function mat_angular(l, i)
     mat_angular = tmp/(2.d0*Mass)
 end function mat_angular
 ! floquet term -------------------------------------
-! function mat_floquet(n)
-!     use hamiltonian, only: coord_r
-!     integer(i4), intent(in) :: n
-!     real   (dp) :: mat_floquet, tmp 
-!     tmp         = dble(n)*Freq
-!     mat_floquet = tmp
-! end function mat_floquet
+function mat_floquet(n)
+    use hamiltonian, only: coord_r
+    integer(i4), intent(in) :: n
+    real   (dp) :: mat_floquet, tmp 
+    tmp         = dble(n)*Freq
+    mat_floquet = tmp
+end function mat_floquet
 ! dipole term --------------------------------------
-! function mat_dipole(i)
-!     use hamiltonian, only: coord_r
-!     integer(i4), intent(in) :: i
-!     real   (dp) :: mat_dipole, tmp 
-!     tmp         = 0.5d0*Amp*coord_r(i)
-!     mat_dipole  = tmp*Charge
-! end function mat_dipole
+function mat_dipole(i)
+    use hamiltonian, only: coord_r
+    integer(i4), intent(in) :: i
+    real   (dp) :: mat_dipole, tmp 
+    tmp         = 0.5d0*Amp*coord_r(i)
+    mat_dipole  = tmp*Charge
+end function mat_dipole
 
 
 ! ==================================================
@@ -157,60 +157,92 @@ end subroutine diag
 subroutine PROC_H(l) 
     character(30), parameter  :: form_out = '(1A15, 10F9.3)'
     integer  (i4), intent(in) :: l 
+    real     (dp), pointer    :: p1_H(:, :, :, :), p2_H(:, :, :), p_H(:)
     real     (dp) :: sign, tmp 
-    integer  (i4) :: i, i1, j
+    integer  (i4) :: i1, i2, j1, j2 
 
-    if(.not. (op_basis == "Y" .or. op_inner == "Y")) then 
-        if(.not. allocated(H)) allocate(H(1:N, N:N))
-    else if(op_basis == "Y" .or. op_inner == "Y") then 
-        if(.not. allocated(H)) allocate(H(1:N, 1:N))
-    end if 
-    if(.not. allocated(E)) allocate(E(1:N))
-    if(.not. allocated(mat_H)) allocate(mat_H(1:N, 1:N))
-    mat_H(:, :) = 0_dp
-    E(:)        = 0_dp 
-    do i = 1, N 
-        do j = 1, N
-            mat_H(i, j) = mat_H(i, j) +mat_Kinet(i, j)
-        enddo
-        mat_H(i, i) = mat_H(i, i) +mat_Poten(i) +mat_angular(l, i)
-    enddo
+    if(associated(mat_H)) nullify(mat_H)
+    if(associated(p1_H))  nullify(p1_H)
+    if(associated(p2_H))  nullify(p2_H)
+    if(associated(p_H))   nullify(p_H)
+    allocate(mat_H(1:N*(2*F +1), 1:N*(2*F +1)))
+    allocate(p1_H (1:N, -F:F,    1:N, -F:F))
+    allocate(p2_H (1:N, -F:F,    1:N*(2*F +1)))
+    allocate(p_H  (1:N*(2*F +1)   *N*(2*F +1)))
+    p1_H (1:N, -F:F,    1:N, -F:F)    => p_H(1:N*(2*F +1)*N*(2*F +1))
+    p2_H (1:N, -F:F,    1:N*(2*F +1)) => p_H(1:N*(2*F +1)*N*(2*F +1))
+    mat_H(1:N*(2*F +1), 1:N*(2*F +1)) => p_H(1:N*(2*F +1)*N*(2*F +1))
+
+    p_H(:) = 0.d0
+    E(:)   = 0.d0 
+    do j2 = -F, F 
+    do j1 =  1, N 
+        do i2 = max(j2 -1_i4, -F), min(j2 +1_i4, F)
+        do i1 = 1, N
+            tmp = 0.d0 
+            if(i2 == j2) then 
+                             tmp = tmp +mat_kinet(i1, j1)
+                if(i1 == j1) tmp = tmp +mat_poten(i1)
+                if(i1 == j1) tmp = tmp +mat_angular(l, i1)
+                if(i1 == j1) tmp = tmp +mat_floquet(i2) 
+            else if(i2 == j2 -1 .or. i2 == j2 +1) then 
+                if(i1 == j1) tmp = tmp +mat_dipole(i1)
+            end if 
+            p1_H(i1, i2, j1, j2)  = tmp 
+        end do 
+        end do
+    end do 
+    end do
+!     call check_mat ! for test 
     call diag
+!     call check_mat ! for test 
 
-    H(:, :) = 0_dp
-    sign    = 1_dp 
-    i1      = 1 
-    if(size(H(1, :)) == 1) i1 = N 
-    do j = 1, N 
-        sign = 1_dp 
-        if(mat_H(1, j) < 0_dp) sign = -1_dp 
-        do i = i1, N 
-            tmp = sign*mat_H(i, j)
-            tmp = tmp/(coord_weight(i)*dr_p_drho)**0.5_dp
-            H(j, i) = tmp
+    H(:, :, :) = 0.d0
+    j1 = 1 
+    if(size(H(1, 0, :)) == 1) j1 = N 
+    do j2 = 1, (2*F +1)*N 
+        sign = 1.d0 
+        if(mat_H(1, j2) < 0.d0) sign = -1.d0 
+        do i1 = j1, N 
+            do i2 = -F, F 
+                tmp = sign*p2_H(i1, i2, j2)
+                tmp = tmp/(coord_weight(i1)*dr_p_drho)**0.5d0
+                H(j2, i2, i1) = tmp 
+            end do 
         end do 
     end do 
-    if(allocated(mat_H)) deallocate(mat_H)
-    write(file_log, form_out) "Energy: ", (E(i), i = 1, 5) 
+    call check_norm ! for test 
+
+    p_H(:) = 0.d0
+    if(associated(mat_H)) nullify(mat_H)
+    if(associated(p1_H))  nullify(p1_H)
+    if(associated(p2_H))  nullify(p2_H)
+    if(associated(p_H))   nullify(p_H)
+    write(file_log, form_out) "Energy: ", (E(i1), i1 = 1, 5) 
 end subroutine PROC_H
 ! end hamiltonian ----------------------------------
 ! basis plot ---------------------------------------
 subroutine PROC_basis_plot(num)
     use hamiltonian, only: coord_r
-    integer  (i1), parameter  :: file_psi = 101, file_ene = 102
-    character(30), parameter  :: form_gen = '(1000ES25.10)'
+    integer  (i1), parameter  :: file_psi = 101,                file_ene = 102
+    character(30), parameter  :: form_psi = '(1I5, 11ES25.10)', form_ene = '(1I5, 1ES25.10)'
     integer  (i4), intent(in) :: num 
-    integer  (i4) :: i, j
+    integer  (i4) :: i1, i2, j
     character (3) :: ch 
 
     write(ch, '(I3.3)') num 
     open(file_psi, file = "output/basis_u_"//ch//".d")
     open(file_ene, file = "output/basis_energy_"//ch//".d")
 
-    write(file_psi, form_gen) (0_dp, j = 0, 20)
-    do i = 1, N 
-        write(file_psi, form_gen) coord_r(i), (H(j, i), j = 1, 10), (H(j, i), j = N -9, N)
-        write(file_ene, form_gen) dble(i), E(i) 
+    do i2 = -F, F 
+        write(file_psi, form_psi) i2, (0.d0, j = 0, 10)
+        do i1 =  1, N
+            write(file_psi, form_psi) i2, coord_r(i1), & 
+                (H(j, i2, i1), j = 1, 5), (H(j, i2, i1), j = N -4, N)
+        end do 
+    end do 
+    do j = 1, (2*F +1)*N 
+        write(file_ene, form_ene) j, E(j) 
     end do 
     close(file_psi)
     close(file_ene)

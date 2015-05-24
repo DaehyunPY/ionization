@@ -7,7 +7,7 @@ TARGET  = a.out
 # COMMON_MOD2 = file.for 
 # COMMON_MOD3 = file.f90
 COMMON_MOD3 += gsl_special.f90 const.f90 
-COMMON_MOD3 += global.f90 hamiltonian.f90 basis.f90 boundary.f90 inner.f90 outer.f90 inf.f90 main.f90 
+COMMON_MOD3 += global.f90 hamiltonian.f90 basis.f90 boundary.f90 inner.f90 outer.f90 asymptote.f90 main.f90 
 COMMON_MOD  = $(COMMON_MOD1)       $(COMMON_MOD2)         $(COMMON_MOD3)
 OBJECTS     = $(COMMON_MOD1:.f=.o) $(COMMON_MOD2:.for=.o) $(COMMON_MOD3:.f90=.o)
 # f90: (ansi/iso or iso standard) modern fortran file
@@ -82,7 +82,7 @@ ${TARGET}: ${OBJECTS}; ${FORTRAN} -o $@ ${OBJECTS} ${LDFLAGS}
 ##################################################
 
 # ${OBJECTS}: ${COMMON_MOD}
-main.o: 		 global.o hamiltonian.o basis.o boundary.o inner.o outer.o inf.o 
+main.o: 		 global.o hamiltonian.o basis.o boundary.o inner.o outer.o asymptote.o 
 inf.o: 			 global.o hamiltonian.o 
 outer.o: 		 global.o hamiltonian.o 
 inner.o: 		 global.o hamiltonian.o 

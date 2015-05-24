@@ -1,22 +1,29 @@
-module inf
+module asymptote
+    ! use only S matrix 
     use kind_type
     use global 
     implicit none
     complex(dp),    allocatable, private, protected :: outer_f(:)
-    real(dp), save, allocatable, private, protected :: CS(:), PS(:, :)
+    real(dp), save, allocatable, private, protected :: PS(:, :)
 contains 
     
 
-subroutine mat_f 
+! ==================================================
+! MATRIX
+! ==================================================
+! matrix f -----------------------------------------
+subroutine mat_f(j)
+    use hamiltonian, only: coord_E
     use math_const, only: i => math_i
+    integer(i4), intent(in) :: j 
     real   (dp) :: k, tmp1, tmp2 
-    integer(i4) :: j 
+    integer(i4) :: h 
 
-    k = (2.0_dp*Mass*Scatt)**0.50
-    do j = 0, L 
-        tmp1 = aimag(S(j))/2.0_dp 
-        tmp2 = (1.0_dp -real(S(j)))/2.0_dp 
-        outer_f(j) = (2.0_dp*dble(j) +1.0_dp)/k*(tmp1 +i*tmp2)
+    k = (2.0_dp*Mass*coord_E(j))**0.50
+    do h = 0, L 
+        tmp1 = aimag(S(j, h))/2.0_dp 
+        tmp2 = (1.0_dp -real(S(j, h)))/2.0_dp 
+        outer_f(h) = (2.0_dp*dble(h) +1.0_dp)/k*(tmp1 +i*tmp2)
     end do 
 end subroutine mat_f 
 
@@ -36,7 +43,7 @@ end subroutine mat_f
 subroutine PROC_CS_plot 
     use math_const,  only: pi => math_pi, degree => math_degree
     use unit_const,  only: au_bohr
-    use hamiltonian, only: coord_r, coord_theta
+    use hamiltonian, only: coord_r, coord_theta, coord_E
     use gsl_special, only: gsl_sf_legendre_Pl
     integer  (i1), parameter :: file_dcs = 101, file_tcs = 102 
     character(30), parameter :: form_cs  = '(30ES25.10)'
@@ -54,11 +61,11 @@ subroutine PROC_CS_plot
     if(op_aa == "Y") unit_cs = (au_to_AA)**2_dp
 
     if(.not. allocated(outer_f)) allocate(outer_f(0:L))
-    call mat_f 
+    call mat_f(1_i4)
 
     open(file_tcs, file = "output/total_cs.d")
     sum = 0.0_dp 
-    k   = (2.0_dp*Mass*Scatt)**0.50
+    k   = (2.0_dp*Mass*coord_E(1_i4))**0.50
     do i = 0, L 
         tmp1 = 4.0_dp*pi/k*outer_f(i)
         sum  = sum +tmp1 
@@ -81,43 +88,19 @@ subroutine PROC_CS_plot
     if(allocated(outer_f)) deallocate(outer_f)
 end subroutine PROC_CS_plot
 ! end cs plot --------------------------------------
-! cs achive ----------------------------------------
-subroutine PROC_CS_achive(j)
-    use math_const, only: pi => math_pi
-    character(30), parameter  :: form_out = '(1A15, 5X, 1ES25.10)'
-    integer  (i4), intent(in) :: j 
-    real     (dp) :: k 
-    complex  (qp) :: sum 
-    complex  (dp) :: tmp 
-    integer  (i4) :: i
-
-    if(.not. allocated(CS))      allocate(CS(1:M))
-    if(.not. allocated(outer_f)) allocate(outer_f(0:L))
-    call mat_f 
-
-    sum = 0.0_dp 
-    k   = (2.0_dp*Mass*Scatt)**0.50
-    do i = 0, L 
-        tmp = 4.0_dp*pi/k*outer_f(i)
-        sum = sum +tmp 
-    end do 
-    tmp   = sum 
-    CS(j) = aimag(tmp)
-    write(file_log, form_out) "total sigma: ", aimag(tmp)
-    if(allocated(outer_f)) deallocate(outer_f)
-end subroutine PROC_CS_achive
-! end cs achive ------------------------------------
 ! e vs cs plot -------------------------------------
 subroutine PROC_E_vs_CS_plot
     use math_const,  only: pi => math_pi
     use unit_const,  only: other_e_eV, au_hartree, au_bohr
     use hamiltonian, only: coord_E
     integer  (i1), parameter   :: file_cs  = 101
-    character(30), parameter   :: form_cs  = '(30ES25.10)'
+    character(30), parameter   :: form_cs  = '(30ES25.10)', form_out = '(1A15, 5X, 1ES25.10)'
     real     (dp), parameter   :: au_to_eV = au_hartree/other_e_ev
     real     (dp), parameter   :: au_to_AA = au_bohr*10.0_dp**10.0_dp 
-    real     (dp) :: unit_e, unit_cs, tmp 
-    real     (qp) :: sum 
+    complex  (dp) :: tmp1
+    complex  (qp) :: sum1  
+    real     (dp) :: unit_e, unit_cs, k, tmp2
+    real     (qp) :: sum2
     integer  (i4) :: i, j
 
     unit_e  = 1.0_dp 
@@ -126,33 +109,27 @@ subroutine PROC_E_vs_CS_plot
     if(op_aa == "Y") unit_cs = (au_to_AA)**2_dp
 
     open(file_cs, file = "output/energy_vs_cs.d")
+    if(.not. allocated(outer_f)) allocate(outer_f(0:L))
     do j = 1, M 
-        sum = 0.0_dp 
+        k = (2.0_dp*Mass*coord_E(j))**0.50
+        outer_f(:) = 0.0_dp 
+        call mat_f(j)
+        sum1 = 0.0_dp 
+        sum2 = 0.0_dp 
         do i = 0, L 
-            tmp = 4_dp*pi/(2_dp*Mass*coord_E(j))*(2_dp*dble(i) +1_dp)
-            sum = sum +tmp 
+            tmp1 = 4.0_dp*pi/k*outer_f(i)
+            sum1 = sum1 +tmp1 
+            tmp2 = 4_dp*pi/(2_dp*Mass*coord_E(j))*(2_dp*dble(i) +1_dp)
+            sum2 = sum2 +tmp2 
         end do 
-        tmp = sum 
-        write(file_cs, form_cs) coord_E(j)*unit_e, CS(j)*unit_cs, tmp*unit_cs 
+        tmp1  = sum1 
+        tmp2  = sum2 
+        write(file_cs, form_cs) coord_E(j)*unit_e, aimag(tmp1)*unit_cs, tmp2*unit_cs 
     end do 
-    if(allocated(CS)) deallocate(CS)
+    if(allocated(outer_f)) deallocate(outer_f)
     close(file_cs)
 end subroutine PROC_E_vs_CS_plot
 ! end e vs cs plot ---------------------------------
-! phase achive -------------------------------------
-subroutine PROC_PS_achive(j)
-    use math_const, only: pi => math_pi
-    integer(i4), intent(in) :: j 
-    complex(dp) :: tmp 
-    integer(i4) :: i
-
-    if(.not. allocated(PS)) allocate(PS(0:L, 1:M))
-    do i = 0, L 
-        tmp      = 0.5_dp*log(S(i))
-        PS(i, j) = aimag(tmp)
-    end do 
-end subroutine PROC_PS_achive
-! end phase achive ---------------------------------
 ! e vs phase & lifttime plot -----------------------
 subroutine PROC_E_vs_PS_plot
     use math_const,  only: pi => math_pi
@@ -163,36 +140,50 @@ subroutine PROC_E_vs_PS_plot
     real     (dp), parameter   :: au_to_eV = au_hartree/other_e_ev
     real     (dp), allocatable :: work(:)
     integer  (i4), allocatable :: r(:)
-    real     (dp) :: unit_e, tmp 
+    complex  (dp) :: tmp1 
+    real     (dp) :: unit_e, tmp2
     integer  (i4) :: i, j, num 
 
     unit_e  = 1.0_dp 
     if(op_ev == "Y") unit_e  = au_to_eV
+
+    if(.not. allocated(PS)) allocate(PS(1:M, 0:L))
+    do i = 0, L 
+        do j = 1, M 
+            tmp1     = 0.5_dp*log(S(j, i))
+            PS(j, i) = aimag(tmp1)
+        end do 
+    end do 
+
     if(.not. allocated(work)) allocate(work(1:M))
     do i = 0, L 
-        work(:)  = PS(i, :)
-        PS(i, :) = 0.0_dp 
+        work(:)  = PS(:, i)
+        PS(:, i) = 0.0_dp 
         num = 0_i4 
         do j = 1, M 
             if(j /= 1) then 
                 if(work(j -1)*work(j) < 0.0_dp) then 
                     if(work(j) > 0.0_dp) then 
-                        tmp = work(j) -pi
-                        if(abs(tmp -work(j -1)) < abs(work(j) -work(j -1))) num = num -1_i4 
+                        tmp2 = work(j) -pi
+                        if(abs(tmp2 -work(j -1)) < abs(work(j) -work(j -1))) num = num -1_i4 
                     else if(work(j) < 0.0_dp) then 
-                        tmp = work(j) +pi
-                        if(abs(tmp -work(j -1)) < abs(work(j) -work(j -1))) num = num +1_i4 
+                        tmp2 = work(j) +pi
+                        if(abs(tmp2 -work(j -1)) < abs(work(j) -work(j -1))) num = num +1_i4 
                     end if 
                 end if
             end if 
-            PS(i, j) = work(j) +dble(num)*pi 
+            PS(j, i) = work(j) +dble(num)*pi 
         end do 
+        tmp2 = (maxval(PS(:, i)) +minval(PS(:, i)))/2.0_dp/pi
+        num  = int(tmp2)
+        if(tmp2 < 0.0_dp) num = num -1_i4
+        PS(:, i) = PS(:, i) -dble(num)*pi 
     end do 
 
     open(file_ph, file = "output/energy_vs_ps.d")
     do i = 0, L 
         do j = 1, M 
-            write(file_ph, form_gen) i, coord_E(j)*unit_e, PS(i, j)
+            write(file_ph, form_gen) i, coord_E(j)*unit_e, PS(j, i)
         end do 
         write(file_ph, form_gen)
     end do 
@@ -202,23 +193,23 @@ subroutine PROC_E_vs_PS_plot
     do i = 0, L 
         work(:) = 0.0_dp 
         do j = 1, M 
-            tmp = 0.0_dp 
+            tmp2 = 0.0_dp 
             if(j < 3) then 
-                tmp = diff_E(u0 = PS(i, j), up1 = PS(i, j +1), up2 = PS(i, j +2))
+                tmp2 = diff_E(u0 = PS(j, i), up1 = PS(j +1, i), up2 = PS(j +2, i))
             else if(j > M -2) then 
-                tmp = diff_E(um2 = PS(i, j -2), um1 = PS(i, j -1), u0 = PS(i, j))
+                tmp2 = diff_E(um2 = PS(j -2, i), um1 = PS(j -1, i), u0 = PS(j, i))
             else if(j >= 3 .and. j <= M -2) then 
-                tmp = diff_E(um2 = PS(i, j -2), um1 = PS(i, j -1), u0 = PS(i, j), up1 = PS(i, j +1), up2 = PS(i, j +2))
+                tmp2 = diff_E(um2 = PS(j -2, i), um1 = PS(j -1, i), u0 = PS(j, i), up1 = PS(j +1, i), up2 = PS(j +2, i))
             end if 
-            tmp = tmp*2.0_dp 
-            write(file_lt, form_gen) i, coord_E(j)*unit_e, tmp 
-            work(j) = tmp 
+            tmp2 = tmp2*2.0_dp 
+            write(file_lt, form_gen) i, coord_E(j)*unit_e, tmp2 
+            work(j) = tmp2 
         end do 
         write(file_lt, form_gen)
-        tmp  = maxval(work(:))
+        tmp2 = maxval(work(:))
         r(:) = maxloc(work(:))
         num  = r(1)
-        write(file_log, form_out) "Resonance: ", i, coord_E(num)*unit_e, 4.0_dp/tmp 
+        write(file_log, form_out) "Resonance: ", i, coord_E(num)*unit_e, 4.0_dp/tmp2 
     end do 
     close(file_lt)
     if(allocated(r))    deallocate(r)
@@ -226,4 +217,4 @@ subroutine PROC_E_vs_PS_plot
     if(allocated(PS))   deallocate(PS)
 end subroutine PROC_E_vs_PS_plot
 ! end e vs phase & lifttime plot -------------------
-end module inf
+end module asymptote

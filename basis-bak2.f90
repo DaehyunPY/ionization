@@ -3,6 +3,7 @@ module basis
     use global 
     implicit none
     real(dp), allocatable, private, protected :: mat_H(:, :)
+!     real(dp), pointer, private, protected :: mat_H(:, :) ! for floquet
 contains
 
 
@@ -160,12 +161,15 @@ subroutine PROC_H(l)
     real     (dp) :: sign, tmp 
     integer  (i4) :: i, i1, j
 
-    if(.not. (op_basis == "Y" .or. op_inner == "Y")) then 
+    if(op_basis == "N" .and. op_inner == "N") then 
         if(.not. allocated(H)) allocate(H(1:N, N:N))
+!         if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, N:N)) ! for floquet
     else if(op_basis == "Y" .or. op_inner == "Y") then 
         if(.not. allocated(H)) allocate(H(1:N, 1:N))
+!         if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, 1:N)) ! for floquet
     end if 
     if(.not. allocated(E)) allocate(E(1:N))
+!     if(.not. allocated(E)) allocate(E(1:(2*F +1)*N)) ! for floquet
     if(.not. allocated(mat_H)) allocate(mat_H(1:N, 1:N))
     mat_H(:, :) = 0_dp
     E(:)        = 0_dp 

@@ -1,4 +1,12 @@
 ============================================================
+LASER FIELD
+============================================================
+ -------------------------------------------  ------.------
+ AMPLITUDE                              [au]       0.1
+ FREQUENCY                              [au]       0.2
+ -
+ -
+============================================================
 PARTICLE
 ============================================================
  -------------------------------------------  ------.------
@@ -6,7 +14,7 @@ PARTICLE
  CHARGE                                 [au]      -1.
  SPIN                                    [1]       0.5
  COUTION: You must set which one unit, au or eV. 
- SCATTERING ENERGY                      [au]       5.
+ SCATTERING ENERGY                      [au]       6.
                                         [eV]      -1.
  -
  -
@@ -44,10 +52,11 @@ POTENTIAL
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- BOUNDARY SIZE                          [au]       1.
- GRID NUMBER OF r COORDINATES            [1]      50
- GRID NUMBER OF Energy COORDINATES       [1]    1000
- MAXIUM OF QUANTUM NUMBER L              [1]       0  
+ BOUNDARY SIZE                          [au]      20.
+ MAXIUM OF ANGULAR MOMANTUM L            [1]       0 
+ GRID NUMBER OF r COORDINATES            [1]      50  
+ FLOQUET NUMBER                          [1]      30
+ GRID NUMBER OF Energy COORDINATES       [1]    5000
  3D PLOT NUMBER OF r COORDINATES         [1]     200 
  3D PLOT NUMBER OF theta COORDINATES     [1]     200 
  -
