@@ -84,7 +84,8 @@ function Poten_r(r)
     real(dp), intent(in) :: r
     real(dp) :: Poten_r, stat, pol, tmp 
     if(ty == 0) then 
-        tmp     = 7.75d0*r**2.d0*exp(-r) ! example 2.6.1
+!         tmp     = 7.75d0*r**2.d0*exp(-r) ! example 2.6.1
+        tmp     = -2.5d0 ! example P G Burke 
         Poten_r = tmp/Charge
     else if(ty == 1) then 
         Poten_r = Z/r 
@@ -147,6 +148,40 @@ subroutine diag
 end subroutine diag
 
 
+! ==================================================
+! TEST 
+! ==================================================
+! check potential ----------------------------------
+! subroutine check_poten
+!     integer  (i1), parameter :: file_poten = 101
+!     character(30), parameter :: form_poten = '(30ES25.10)'
+!     integer  (i4) :: i 
+
+!     open(file_poten, file = "output/poten.d")
+!     do i = 1, N
+!         write(file_poten, form_poten) coord_r(i), Poten_r(coord_r(i))*Charge
+!     end do
+!     close(file_poten)
+! end subroutine check_poten
+! end check potential ------------------------------
+! check coordination system ------------------------
+! subroutine check_coord
+!     use gsl_special, only: gsl_sf_legendre_Pl
+!     integer  (i1), parameter :: file_coord = 101
+!     character(30), parameter :: form_coord = '(30ES25.10)'
+!     integer  (i4) :: i 
+
+!     open(file_coord, file = "output/coord.d")
+!     write(file_coord, form_coord) coord_r(0_i4), coord_rho(0), coord_weight(0)
+!     do i = 1, N -1 
+!         write(file_coord, form_coord) coord_r(i), coord_rho(i), coord_weight(i), & 
+!             N*(coord_rho(i)*gsl_sf_legendre_Pl(N, coord_rho(i)) -gsl_sf_legendre_Pl(N -1_i4, coord_rho(i))) &
+!                 /(coord_rho(i)**2.d0 -1.d0)
+!     end do 
+!     write(file_coord, form_coord) coord_r(N), coord_rho(N), coord_weight(N)
+!     close(file_coord)
+! end subroutine check_coord
+! end check coordination system --------------------
 
 
 
@@ -162,27 +197,30 @@ end subroutine diag
 subroutine PROC_input
     use math_const, only: pi => math_pi
     use unit_const, only: other_e_eV, au_hartree
-    character(60), parameter :: & 
+    character(60),  parameter :: & 
         form_laser = '(4/, 2(45X, 1F15.8, /), /)', &
         form_part  = '(4/, 3(45X, 1F15.8, /), 1/, 2(45X, 1F15.8, /), /)', &
         form_poten = '(4/, 1(45X, 1I15, /), 3(45X, 1F15.8, /))'
-    character(30), parameter :: &
-        form_p1    = '(20/)', &
-        form_p2    = '( 2/, 3(45X, 1F15.8, /), 15/)', &
-        form_p3    = '( 7/, 3(45X, 1F15.8, /), 10/)', &
-        form_p4    = '(11/, 4(45X, 1F15.8, /),  5/)', &
-        form_p5    = '(16/, 3(45X, 1F15.8, /),  1/)'
-    character(60), parameter :: &
-        form_cal   = '(4/, 1(45X, 1F15.8, /), 6(45X, 1I15, /), /)'
-    character(90), parameter :: &
-        form_opt   = '(6/, 3(45X, 6X, 1A1, /), 1/, 5(45X, 6X, 1A1, /), 3/, 2(45X, 6X, 1A1, /))'
-    real     (dp), parameter :: eV_to_au = other_e_ev/au_hartree
-    real     (dp) :: tmp1, tmp2 
+    character(30),  parameter :: &
+        form_p1 = '(20/)', &
+        form_p2 = '( 2/, 3(45X, 1F15.8, /), 15/)', &
+        form_p3 = '( 7/, 3(45X, 1F15.8, /), 10/)', &
+        form_p4 = '(11/, 4(45X, 1F15.8, /),  5/)', &
+        form_p5 = '(16/, 3(45X, 1F15.8, /),  1/)'
+    character(60),  parameter :: &
+        form_cal = '(4/, 1(45X, 1F15.8, /), 6(45X, 1I15, /), /)'
+    character(120), parameter :: &
+        form_opt   = & 
+            '(6/, 3(45X, 6X, 1A1, /), /, 2(45X, 6X, 1A1, /), /, 3(45X, 6X, 1A1, /), 3/, 2(45X, 6X, 1A1, /))'
+    real(dp),  parameter :: eV_to_au = other_e_ev/au_hartree
+    real(dp) :: tmp1, tmp2 
 
     open(file_input, file = "input.d")
+    ! laser field ----------------------------------
     read(file_input, form_laser) Amp, Freq
     if(.not. Amp  >  0.d0) stop "Error #051: check 'LASER FIELD - AMPLITUDE'"
     if(.not. Freq >  0.d0) stop "Error #052: check 'LASER FIELD - FREQUENCY'"
+    ! particle -------------------------------------
     read(file_input, form_part ) Mass, Charge, Spin, tmp1, tmp2 
     if(.not. Mass >  0.d0)  stop "Error #053: check 'PARTICLE - MASS'"    
     if(.not. Spin == 0.5d0) stop "Error #054: check 'PARTICLE - SPIN'"
@@ -190,8 +228,9 @@ subroutine PROC_input
     if(tmp1 <  0.d0 .and. tmp2 <  0.d0) stop "Error #056: check 'PARTICLE - SCATTERING ENERGY'"
     if(tmp1 >= 0.d0) Scatt = tmp1 
     if(tmp2 >= 0.d0) Scatt = tmp2*eV_to_au
+    ! potential ------------------------------------
     read(file_input, form_poten) ty, Z, alphab, cutoff
-    if(.not. (ty >= 0 .and. ty <= 5)) stop "Error #051: check 'POTENTIAL - TYPE'"
+    if(.not. (ty >= 0 .and. ty <= 6)) stop "Error #051: check 'POTENTIAL - TYPE'"
     if(ty == 0) then 
         read(file_input, form_p1)         
     else if(ty == 1) then 
@@ -209,6 +248,7 @@ subroutine PROC_input
     else if(ty == 5) then 
         read(file_input, form_p5) alpha1, alpha2, alpha3
     end if 
+    ! calculation ----------------------------------
     read (file_input, form_cal) Bound, L, N, F, M, pr, ptheta
     if(.not. Bound  >  0.d0) stop "Error #058: check 'CALCULATION - BOUNDARY SIZE'"
     if(.not. L      >= 0)    stop "Error #059: check 'CALCULATION - MAXIUM OF ANGULAR MOMANTUM L'"
@@ -217,15 +257,20 @@ subroutine PROC_input
     if(.not. M      >  0)    stop "Error #062: check 'CALCULATION - GRID NUMBER OF Energy COORDINATES'"
     if(.not. pr     >  0)    stop "Error #063: check 'CALCULATION - 3D PLOT NUMBER OF r COORDINATES'"
     if(.not. ptheta >  0)    stop "Error #064: check 'CALCULATION - 3D PLOT NUMBER OF theta COORDINATES'"
+    if(pr > N) pr = N 
+    dtheta = pi/dble(ptheta)
+    dE     = Scatt/dble(M) 
+    ! option ---------------------------------------
     read (file_input, form_opt) & 
-        op_ev, op_degree, op_aa, &
-        op_poten, op_basis, op_dcs, op_inner, op_outer, &
+        op_ev, op_degree, op_aa, & 
+        op_basis, op_bound, & 
+        op_dcs, op_inner, op_outer, &
         op_tcs, op_ps
     if(.not.(op_ev     == "Y" .or. op_ev     == "N")) stop "Error #065: check 'OPTION - USE ENERGY UNIT eV'"
     if(.not.(op_degree == "Y" .or. op_degree == "N")) stop "Error #066: check 'OPTION - USE ANGULAR UNIT degree'"
     if(.not.(op_aa     == "Y" .or. op_aa     == "N")) stop "Error #067: check 'OPTION - USE CROSS SECTION UNIT A^2'"
-    if(.not.(op_poten  == "Y" .or. op_poten  == "N")) stop "Error #068: check 'OPTION - POTENTIAL FUNCTION'"
     if(.not.(op_basis  == "Y" .or. op_basis  == "N")) stop "Error #069: check 'OPTION - BASIS FUNCTION'"
+    if(.not.(op_bound  == "Y" .or. op_bound  == "N")) stop "Error #415: check 'OPTION - BOUND STATES ENERGY & FUNCTION'"
     if(.not.(op_dcs    == "Y" .or. op_dcs    == "N")) stop "Error #070: check 'OPTION - CROSS SECTION FUNCTION'"
     if(.not.(op_inner  == "Y" .or. op_inner  == "N")) stop "Error #071: check 'OPTION - INNER REGION WAVE FUNCTION'"
     if(.not.(op_outer  == "Y" .or. op_outer  == "N")) stop "Error #072: check 'OPTION - OUTER REGION WAVE FUNCTION'"
@@ -233,20 +278,12 @@ subroutine PROC_input
     if(.not.(op_ps     == "Y" .or. op_ps     == "N")) stop "Error #074: check 'OPTION - KINETIC ENERGY vs PHASE'"
     close(file_input) 
     open (file_log, file = "output/log.d")
-    
-    if(pr > N) pr = N 
-    dtheta = pi/dble(ptheta)
-    dE     = Scatt/dble(M) 
-
-    if(.not. allocated(coord_rho))    allocate(coord_rho   (0:N))
-    if(.not. allocated(coord_weight)) allocate(coord_weight(0:N))
-    if(.not. allocated(coord_dshape)) allocate(coord_dshape(0:N, 0:N))
-
     if(.not. (op_tcs == "Y" .or. op_ps == "Y")) then 
         M  = 1
         dE = Scatt
     else if(op_tcs == "Y" .or. op_ps == "Y") then 
         op_basis = "N"
+        op_bound = "N"
         op_dcs   = "N"
         op_inner = "N" 
         op_outer = "N"
@@ -258,6 +295,15 @@ subroutine PROC_inform
     use unit_const, only: other_e_eV, au_hartree
     character(30), parameter :: form_out = '(1A15, 1ES15.3)'
     real     (dp), parameter :: au_to_eV = au_hartree/other_e_ev
+
+    write(file_log, *) "================================================================="
+    write(file_log, *) "LASER FIELD"
+    write(file_log, *) "================================================================="
+    write(file_log, *) " -------------------------------------------  -------------------"
+    write(file_log, *) " AMPLITUDE                              [au] ", Amp 
+    write(file_log, *) " FREQUENCY                              [au] ", Freq
+    write(file_log, *) " - "
+    write(file_log, *) " - "
 
     write(file_log, *) "================================================================="
     write(file_log, *) "PARTICLE: ELECTRON"
@@ -368,46 +414,47 @@ end subroutine PROC_inform
 ! end information ----------------------------------
 ! coordination -------------------------------------
 subroutine PORC_coord
-    use fgsl, only: fgsl_sf_legendre_Pl
+    use gsl_special, only: gsl_sf_legendre_Pl
     real   (dp) :: tmp
     real   (qp) :: sum 
-    integer(i4) :: n, i, j, k 
+    integer(i4) :: i, j, k 
     
-    n = size(coord_rho(:)) -2 
-    if(.not. allocated(X)) allocate(X(1:2, 1:n))
+    if(.not. allocated(coord_rho))    allocate(coord_rho   (0:N))
+    if(.not. allocated(coord_weight)) allocate(coord_weight(0:N))
+    if(.not. allocated(coord_dshape)) allocate(coord_dshape(0:N, 0:N))
+    if(.not. allocated(X)) allocate(X(1:2, 1:N -1))
     X = 0.d0 
-    do i = 1, n -1 
+    do i = 1, N -2
         tmp = (dble(i)*dble(i +2))/(dble(2*i +1)*dble(2*i +3))
         tmp = tmp**0.5d0  
         X(1, i +1) = tmp 
     end do 
     call diag
     
-    n   = size(coord_rho(:)) -1 
-    tmp = 2.d0/(dble(n +1)*dble(n))
+    tmp = 2.d0/(dble(N +1)*dble(N))
     coord_rho   (0) = -1.d0
     coord_weight(0) = tmp 
-    do i = 1, n -1
+    do i = 1, N -1
         coord_rho   (i) = X(1, i)
-        coord_weight(i) = tmp/(fgsl_sf_legendre_Pl(n, coord_rho(i)))**2.d0 
+        coord_weight(i) = tmp/(gsl_sf_legendre_Pl(N, coord_rho(i)))**2.d0 
     end do 
-    coord_rho   (n) = 1.d0
-    coord_weight(n) = tmp 
-    dr_p_drho = Bound/(coord_rho(n) -coord_rho(0))
+    coord_rho   (N) = 1.d0
+    coord_weight(N) = tmp 
+    dr_p_drho = Bound/(coord_rho(N) -coord_rho(0))
     if(allocated(X)) deallocate(X) 
 
-    do i = 0, n 
-        do j = 0, n 
+    do i = 0, N 
+        do j = 0, N 
             if(i == j) then 
                 sum = 0.d0 
-                do k = 0, n 
+                do k = 0, N 
                     if(k /= i) then 
                         sum = sum +1.d0/(coord_rho(i) -coord_rho(k))
                     end if 
                 end do 
             else if(i /= j) then 
                 sum = 1.d0/(coord_rho(i) -coord_rho(j))
-                do k = 0, n 
+                do k = 0, N 
                     if(k /= i .and. k /= j) then 
                         sum = sum*(coord_rho(j) -coord_rho(k))/(coord_rho(i) -coord_rho(k))
                     end if 
@@ -417,32 +464,10 @@ subroutine PORC_coord
             coord_dshape(i, j) = sum 
         end do 
     end do 
+!     call check_poten ! for test 
+!     call check_coord ! for test 
 end subroutine PORC_coord
 ! end coordination ---------------------------------
-! potential plot -----------------------------------
-subroutine PROC_Poten_plot
-    use fgsl, only: fgsl_sf_legendre_Pl
-    integer  (i1), parameter :: file_poten = 101, file_coord = 102 
-    character(30), parameter :: form_gen   = '(30ES25.10)'
-    integer  (i4) :: i 
-
-    open(file_poten, file = "output/poten.d")
-    do i = 1, N
-        write(file_poten, form_gen) coord_r(i), Poten_r(coord_r(i))*Charge
-    end do
-    close(file_poten)
-
-    open(file_coord, file = "output/coord.d")
-    write(file_coord, form_gen) coord_r(0_i4), coord_rho(0), coord_weight(0)
-    do i = 1, N -1 
-        write(file_coord, form_gen) coord_r(i), coord_rho(i), coord_weight(i), & 
-            N*(coord_rho(i)*fgsl_sf_legendre_Pl(N, coord_rho(i)) -fgsl_sf_legendre_Pl(N -1_i4, coord_rho(i))) &
-                /(coord_rho(i)**2.d0 -1.d0)
-    end do 
-    write(file_coord, form_gen) coord_r(N), coord_rho(N), coord_weight(N)
-    close(file_coord)
-end subroutine PROC_Poten_plot
-! end potential plot -------------------------------
 ! out ----------------------------------------------
 subroutine PROC_prog_out 
     if(allocated(coord_rho))    deallocate(coord_rho)

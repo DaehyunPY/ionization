@@ -10,6 +10,7 @@ module global
     complex (dp), save, allocatable :: S(:, :), A(:)
     character(1), save :: &
         op_ev, op_degree, op_aa, & 
-        op_poten, op_basis, op_dcs, op_inner, op_outer, &
+        op_basis, op_bound, & 
+        op_dcs, op_inner, op_outer, &
         op_tcs, op_ps
 end module

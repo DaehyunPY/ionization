@@ -1,8 +1,8 @@
 program main
     use kind_type
     use global
-    use hamiltonian, only: PROC_input, PROC_inform, PORC_coord, PROC_Poten_plot, PROC_prog_out 
-    use basis,       only: PROC_H, PROC_basis_plot
+    use hamiltonian, only: PROC_input, PROC_inform, PORC_coord, PROC_prog_out 
+    use basis,       only: PROC_H, PROC_basis_plot, PROC_bound
     use boundary,    only: PROC_boundary_mat, PROC_mat_out
     use inner,       only: PROC_inner_achive, PROC_inner_plot
     use outer,       only: PROC_outer_plot
@@ -24,9 +24,6 @@ program main
     write(file_log, *)
         call PROC_inform
         call PORC_coord
-        if(op_poten == "Y") then
-            call PROC_Poten_plot
-        end if
         write(file_log, *)
     call cpu_time(t2)
     write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t1 
@@ -47,6 +44,9 @@ program main
         call PROC_H(i) 
         if(op_basis == "Y") then 
             call PROC_basis_plot(i)
+        end if 
+        if(op_bound == "Y") then 
+            call PROC_bound(i)
         end if 
         call cpu_time(t2)
         write(file_log, form_time2) "RUNNING TIME: ", t2 -t1
@@ -99,7 +99,7 @@ program main
     write(file_log, *) "PROGRAM OVER"
     write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_time1) "PROGRAM RUNNING TIME: ", tt -t1 
+    write(file_log, form_time1) "PROGRAM RUNNING TIME: ", t2 -tt
     write(file_log, *)
     call PROC_prog_out 
     write(*, *) "Program over."

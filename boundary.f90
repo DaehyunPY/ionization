@@ -17,7 +17,7 @@ subroutine mat_R(m, l)
     real     (qp) :: sum 
     integer  (i4) :: i
     if(.not. allocated(R)) allocate(R(l:l))
-    sum = 0.d0  
+    sum = 0.d0 
     do i = 1, N 
         sum = sum +H(i, N)**2.d0/(E(i) -coord_E(m))
     end do 
@@ -27,21 +27,21 @@ end subroutine mat_R
 ! matrix K -----------------------------------------
 subroutine mat_K(m, l)
     use hamiltonian, only: coord_E
-    use fgsl, only: fgsl_sf_bessel_jsl, fgsl_sf_bessel_ysl
+    use gsl_special, only: gsl_sf_bessel_jsl, gsl_sf_bessel_ysl
     character(30), parameter  :: form_out = '(1A15, 1ES15.3)'
     integer  (i4), intent(in) :: m, l 
     real     (dp) :: ka, sb_j, sb_y, diff_j, diff_y 
     real     (dp) :: agamma, tmp1, tmp2 
     if(.not. allocated(K)) allocate(K(l:l))
     ka = (2.d0*Mass*coord_E(m))**0.5d0*Bound
-    sb_j = fgsl_sf_bessel_jsl(l, ka)
-    sb_y = fgsl_sf_bessel_ysl(l, ka)
+    sb_j = gsl_sf_bessel_jsl(l, ka)
+    sb_y = gsl_sf_bessel_ysl(l, ka)
     if(l /= 0) then 
-        diff_j = fgsl_sf_bessel_jsl(l -1_i4, ka) -dble(l +1)/ka*fgsl_sf_bessel_jsl(l, ka)
-        diff_y = fgsl_sf_bessel_ysl(l -1_i4, ka) -dble(l +1)/ka*fgsl_sf_bessel_ysl(l, ka)
+        diff_j = gsl_sf_bessel_jsl(l -1_i4, ka) -dble(l +1)/ka*gsl_sf_bessel_jsl(l, ka)
+        diff_y = gsl_sf_bessel_ysl(l -1_i4, ka) -dble(l +1)/ka*gsl_sf_bessel_ysl(l, ka)
     else if(l == 0) then 
-        diff_j = -fgsl_sf_bessel_jsl(1_i4, ka) -dble(1)/ka*fgsl_sf_bessel_jsl(0_i4, ka)
-        diff_y = -fgsl_sf_bessel_ysl(1_i4, ka) -dble(1)/ka*fgsl_sf_bessel_ysl(0_i4, ka)
+        diff_j = -gsl_sf_bessel_jsl(1_i4, ka) -dble(1)/ka*gsl_sf_bessel_jsl(0_i4, ka)
+        diff_y = -gsl_sf_bessel_ysl(1_i4, ka) -dble(1)/ka*gsl_sf_bessel_ysl(0_i4, ka)
     end if 
     agamma = 1.d0/R(l) -1.d0
     tmp1   = ka*diff_j -agamma*sb_j 

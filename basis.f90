@@ -33,6 +33,35 @@ function mat_angular(l, i)
     tmp         = angular_r(l)/coord_r(i)**2.d0
     mat_angular = tmp/(2.d0*Mass)
 end function mat_angular
+! floquet term -------------------------------------
+! function mat_floquet(n)
+!     use hamiltonian, only: coord_r
+!     integer(i4), intent(in) :: n
+!     real   (dp) :: mat_floquet, tmp 
+!     tmp         = dble(n)*Freq
+!     mat_floquet = tmp
+! end function mat_floquet
+! dipole term --------------------------------------
+! function mat_dipole(i)
+!     use hamiltonian, only: coord_r
+!     integer(i4), intent(in) :: i
+!     real   (dp) :: mat_dipole, tmp 
+!     tmp         = 0.5d0*Amp*coord_r(i)
+!     mat_dipole  = tmp*Charge
+! end function mat_dipole
+! matrix R -----------------------------------------
+function func_R(energy)
+    real   (dp), intent(in) :: energy
+    real   (dp) :: func_R 
+    real   (qp) :: sum 
+    integer(i4) :: i
+    sum = 0.d0 
+    do i = 1, N 
+        sum = sum +H(i, N)**2.d0/(E(i) -energy)
+    end do 
+    func_R = sum/(2.d0*Mass*Bound)
+end function func_R
+! matrix R -----------------------------------------
 
 
 ! ==================================================
@@ -61,6 +90,71 @@ subroutine diag
 end subroutine diag
 
 
+! ==================================================
+! TEST 
+! ==================================================
+! check matrix -------------------------------------
+! subroutine check_mat
+!     integer  (i1), parameter :: file_check = 101
+!     character(30), parameter :: & 
+!         form_num   = '(20X, 5000(I15, 5X))', &
+!         form_check = '(20X, 5000(ES15.5, 5X))', &
+!         form_ch    = '(1I10)', &
+!         form_ch1   = '(1I15, 5X, ', &
+!         form_ch2   = '20X, ', &
+!         form_ch3   = '(ES15.5, 5X), 20X, ', &
+!         form_ch4   = '(ES15.5, 5X))'
+!     character(10) :: ch1, ch2 
+!     integer  (i4) :: n, i, j 
+!     n = size(mat_H(:, 1))
+!     open(file_check, file = "output/check_mat.d")
+!     write(file_check, form_num) (j, j = 1, n)
+!     do i = 1, n 
+!         if(i == 1) then 
+!             write(ch1, form_ch) 0 
+!             write(ch2, form_ch) n -1
+!             write(file_check, form_ch1//form_ch2//ch2//form_ch4) i, (mat_H(i, j), j = 2, n)
+!             ch1 = ""
+!             ch2 = ""
+!         else if(i == n) then 
+!             write(ch1, form_ch) n -1 
+!             write(ch2, form_ch) 0 
+!             write(file_check, form_ch1//ch1//form_ch4) i, (mat_H(i, j), j = 1, n -1) 
+!             ch1 = ""
+!             ch2 = ""
+!         else 
+!             write(ch1, form_ch) i -1 
+!             write(ch2, form_ch) n -i 
+!             write(file_check, form_ch1//ch1//form_ch3//ch2//form_ch4) i, (mat_H(i, j), j = 1, i -1), (mat_H(i, j), j = i +1, n)
+!             ch1 = ""
+!             ch2 = ""
+!         end if 
+!     end do 
+!     write(file_check, *)
+!     write(file_check, form_num) (j, j = 1, n)
+!     write(file_check, form_check) (mat_H(j, j), j = 1, n)
+!     write(file_check, *)
+!     close(file_check)
+! end subroutine check_mat
+! check matrix -------------------------------------
+! subroutine check_norm
+!     real(qp) :: sum, total  
+!     integer  :: i1, i2, j 
+!     total = 0.d0 
+!     do j = 1, (2*F +1)*N
+!         sum = 0.d0 
+!         do i2 = -F, F
+!             do i1 = 1, N 
+!                 sum = sum +H(j, i2, i1)*H(j, i2, i1)*coord_weight(i1)*dr_p_drho
+!             end do 
+!         end do 
+!         write(*, *) j, dble(sum)
+!         total = total +sum 
+!     end do 
+!     write(*, *) 'total', dble(total/((2*F +1)*N))
+! end subroutine check_norm
+
+
 
 
 
@@ -79,9 +173,9 @@ subroutine PROC_H(l)
     real     (dp) :: sign, tmp 
     integer  (i4) :: i, i1, j
 
-    if(.not. (op_basis == "Y" .or. op_inner == "Y")) then 
+    if(.not. (op_basis == "Y" .or. op_inner == "Y")) then
         if(.not. allocated(H)) allocate(H(1:N, N:N))
-    else if(op_basis == "Y" .or. op_inner == "Y") then 
+    else if(op_basis == "Y" .or. op_inner == "Y") then
         if(.not. allocated(H)) allocate(H(1:N, 1:N))
     end if 
     if(.not. allocated(E)) allocate(E(1:N))
@@ -94,7 +188,9 @@ subroutine PROC_H(l)
         enddo
         mat_H(i, i) = mat_H(i, i) +mat_Poten(i) +mat_angular(l, i)
     enddo
+!     call check_mat ! for test 
     call diag
+!     call check_mat ! for test 
 
     H(:, :) = 0.d0
     sign    = 1.d0 
@@ -105,24 +201,25 @@ subroutine PROC_H(l)
         if(mat_H(1, j) < 0.d0) sign = -1.d0 
         do i = i1, N 
             tmp = sign*mat_H(i, j)
-            tmp = tmp/(coord_weight(i)*dr_p_drho)**0.5d0 
+            tmp = tmp/(coord_weight(i)*dr_p_drho)**0.5d0
             H(j, i) = tmp
         end do 
     end do 
+!     call check_norm ! for test 
     if(allocated(mat_H)) deallocate(mat_H)
     write(file_log, form_out) "Energy: ", (E(i), i = 1, 5) 
 end subroutine PROC_H
 ! end hamiltonian ----------------------------------
 ! basis plot ---------------------------------------
-subroutine PROC_basis_plot(num)
+subroutine PROC_basis_plot(l)
     use hamiltonian, only: coord_r
     integer  (i1), parameter  :: file_psi = 101, file_ene = 102
-    character(30), parameter  :: form_gen = '(1000ES25.10)'
-    integer  (i4), intent(in) :: num 
+    character(30), parameter  :: form_gen = '(25ES25.10)'
+    integer  (i4), intent(in) :: l 
     integer  (i4) :: i, j
     character (3) :: ch 
 
-    write(ch, '(I3.3)') num 
+    write(ch, '(I3.3)') l 
     open(file_psi, file = "output/basis_u_"//ch//".d")
     open(file_ene, file = "output/basis_energy_"//ch//".d")
 
@@ -135,4 +232,53 @@ subroutine PROC_basis_plot(num)
     close(file_ene)
 end subroutine PROC_basis_plot
 ! end basis plot -----------------------------------
+! bound states -------------------------------------
+subroutine PROC_bound(l)
+    use gsl_special, only: gsl_sf_bessel_ksl_scaled
+    integer  (i1), parameter  :: file_bound = 101
+    character(30), parameter  :: form_bound = '(2ES25.10)', form_out = '(1A15, 1I15, 2ES15.3)'
+    integer  (i4), intent(in) :: l 
+    real     (dp) :: dE, E0, Ei, tmp1, tmp2, d1, d2 
+    real     (dp) :: ka, sb_ka, diff_ka 
+    integer  (i4) :: i, j, m, num 
+    character (3) :: ch 
+
+    write(ch, '(I3.3)') l 
+    open(file_bound, file = "output/bound_"//ch//".d")
+    m   = 1000
+    num = 0 
+    do j = 1, N 
+        tmp1 = E(j)
+        tmp2 = E(j +1)
+        if(.not. tmp1 < 0.d0) exit 
+        if(.not. tmp2 < 0.d0) tmp2 = 0.d0 
+        E0  = tmp1
+        dE  = (tmp2 -tmp1)/dble(m)
+        d1  = 0.d0 
+        do i = 1, m -1 
+            Ei = E0 +dble(i)*dE 
+            ka = (2.d0*Mass*(-Ei))**0.5d0*Bound
+            sb_ka = gsl_sf_bessel_ksl_scaled(l, ka)/exp(ka)*ka 
+            if(.not. l == 0) then 
+                tmp1 = dble(l)*gsl_sf_bessel_ksl_scaled(l, ka)/exp(ka)
+                tmp2 = dble(l +1)*gsl_sf_bessel_ksl_scaled(l +1_i4, ka)/exp(ka)
+            else if(l == 0) then 
+                tmp1 = 0.d0 
+                tmp2 = dble(l +1)*gsl_sf_bessel_ksl_scaled(l +1_i4, ka)/exp(ka)
+            end if 
+            diff_ka = -ka**2.d0/dble(2*l +1)*(tmp1 +tmp2)
+            d2 = sb_ka -func_R(Ei)*(sb_ka +diff_ka)
+            write(file_bound, form_bound) Ei, d2
+            if(d1*d2 < 0.d0) then 
+                num  = num +1 
+                tmp1 = -dE*abs(d2)/(abs(d1) +abs(d2))
+                tmp2 = Ei +tmp1 
+                write(file_log, form_out) "Bound State: ", num, tmp2
+            end if 
+            d1 = d2 
+        end do 
+    end do 
+    close(file_bound)
+end subroutine PROC_bound
+! end bound states ---------------------------------
 end module basis
