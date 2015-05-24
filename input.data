@@ -1,65 +1,52 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 ============================================================
-LASER FIELD
+LASER FIELD SCATTERING
 ============================================================
  -------------------------------------------  ------.------
- AMPLITUDE                              [au]       0.00004
- -
- -
-============================================================
-PARTICLE
-============================================================
- -------------------------------------------  ------.------
- MASS                                   [au]       1.
- CHARGE                                 [au]      -1.
- SPIN                                    [1]       0.5
- COUTION: You must set which one unit, au or eV. 
- SCATTERING ENERGY                      [au]       0.3
-                                        [eV]      -1.
+ FREQUENCY                              [au]       0.2  
+ MAXIMUM AMPLITUDE                      [au]       0.1 
+ MINIMUM AMPLITUDE                      [au]       0.01
  -
  -
 ============================================================
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- TYPE                                 [TYPE]       5 
- ELEMENT NUMBER                          [1]      18.
+ POTENTIAL TYPE                       [TYPE]       0
+ ELEMENT NUMBER                          [1]       1.
  POLARIZABILITY                         [au]      10.77
- CUTOFF                                 [au]       1.76  
- [TYPE 0] EXAMPLE 
+ CUTOFF                                 [au]       1.76
+ [TYPE 0] EXAMPLE
  [TYPE 1] COULOMB
  [TYPE 2] GELTMAN
     COEFFICIENT z0                      [au]      1.07
     COEFFICIENT z1                      [au]      1.07
     COEFFICIENT z2                      [au]      1.
  [TYPE 3] GREEN & YUKAWA
-    COUTION: You must set D or H, and delta is option. 
-    COEFFICIENT D                       [au]      0.5   
-    COEFFICIENT H                       [au]      1.256 
-    COEFFICIENT delta                   [au]      0.9707407064
+    COUTION: You must set D or H, and delta is option.
+    COEFFICIENT D                       [au]     -1
+    COEFFICIENT H                       [au]      0.284
+    COEFFICIENT delta                   [au]     -1
  [TYPE 4] KYLSTRA & BUCKINGHAM
     COEFFICIENT A                       [au]      2.60505
     COEFFICIENT B                       [au]      2.08144
     COEFFICIENT alpha                   [au]      1.41
-    COEFFICIENT beta                    [au]      2.61 
- [TYPE 5] CHEN & NOUS 
-    COEFFICIENT alpha1                  [au]      3.04  
-    COEFFICIENT alpha2                  [au]     10.62  
-    COEFFICIENT alpha3                  [au]      1.83  
+    COEFFICIENT beta                    [au]      2.61
+ [TYPE 5] CHEN & NOUS
+    COEFFICIENT alpha1                  [au]      3.04
+    COEFFICIENT alpha2                  [au]     10.62
+    COEFFICIENT alpha3                  [au]      1.83
  -
  -
 ============================================================
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- BOUNDARY SIZE                          [au]     200.
- MAXIUM OF ANGULAR MOMANTUM L            [1]      80  
- GRID NUMBER OF r COORDINATES            [1]     150  
- FLOQUET NUMBER                          [1]      30
- GRID NUMBER OF Energy COORDINATES       [1]    1000
- 3D PLOT NUMBER OF r COORDINATES         [1]     200 
- 3D PLOT NUMBER OF theta COORDINATES     [1]     200 
+ INNER REGION SIZE                      [au]       1.
+ MAXIMUM OF ANGULAR MOMANTUM L           [1]       0
+ GRID NUMBER OF r COORDINATES            [1]      50 
+ FLOQUET BLOCK NUMBER                    [1]      10 
+ GRID NUMBER OF Amplitude COORDINATES    [1]     100
+ GRID NUMBER OF 3D PLOT                  [1]     200
  -
  -
 ============================================================
@@ -67,143 +54,10 @@ OPTION
 ============================================================
  -------------------------------------------  ------.------
  [UNIT]
- COUTION: Default unit system is a.u. 
-    USE ENERGY UNIT eV                 [Y/N]       YES  
-    USE ANGULAR UNIT degree            [Y/N]       YES 
-    USE CROSS SECTION UNIT A^2         [Y/N]       NO 
- [OUTPUT 1] GENERAL 
-    BASIS FUNCTION                     [Y/N]       NO 
-    BOUND STATES ENERGY & FUNCTION     [Y/N]       NO 
- [OUTPUT 2] POTENTIAL SCATTERING 
-    DIFFERCIAL CROSS SECTION           [Y/N]       YES  
-    INNER REGION WAVE FUNCTION         [Y/N]       NO 
-    OUTER REGION WAVE FUNCTION         [Y/N]       NO 
- [OUTPUT 3] RESONANCE 
- COUTION: OUTPUT 1 & 2 option would be invalid. 
- COUTION: KINETIC ENERGY value would be maxium one. 
-    KINETIC ENERGY vs CROSS SECTION    [Y/N]       NO 
-    KINETIC ENERGY vs PHASE SHIFT      [Y/N]       NO   
+ COUTION: Default unit system is a.u.
+    USE ENERGY UNIT eV                 [1/0]       0
+    USE ANGULAR UNIT degree            [1/0]       0
+    USE CROSS SECTION UNIT A^2         [1/0]       0
+ [OUTPUT]
  -
  -
-=======
-================================================================================
-LASER FIELD IONIZATION
-================================================================================
-    -------------------------------------------------- ----------.----------
-    "FREQUENCY                                   [au]"          0.2
-    "MAXIMUM AMPLITUDE                           [au]"          0.1
-    "MINIMUM AMPLITUDE                           [au]"          0.01
-    -
-    -
-================================================================================
-POTENTIAL
-================================================================================
-    -------------------------------------------------- ----------.----------
-    "POTENTIAL TYPE                            [TYPE]"          0
-    -
-    -
-================================================================================
-CALCULATION
-================================================================================
-    -------------------------------------------------- ----------.----------
-    "INNER REGION SIZE                           [au]"          1.
-    "GRID NUMBER OF r COORDINATES                 [1]"         50
-    "GRID NUMBER OF Amplitude COORDINATES         [1]"          1
-    "NUMBER OF FLOQUET BLOCK                      [1]"         10
-    -
-    -
-================================================================================
-OPTION
-=======
-================================================================================
-LASER FIELD IONIZATION
-================================================================================
-    -------------------------------------------------- ----------.----------
-    "FREQUENCY                                   [au]"          0.2
-    "MAXIMUM AMPLITUDE                           [au]"          0.1
-    "MINIMUM AMPLITUDE                           [au]"          0.01
-    -
-    -
-================================================================================
-POTENTIAL
-================================================================================
-    -------------------------------------------------- ----------.----------
-    "POTENTIAL TYPE                            [TYPE]"          0
-    -
-    -
-================================================================================
-CALCULATION
-================================================================================
-    -------------------------------------------------- ----------.----------
-    "INNER REGION SIZE                           [au]"          1.
-    "GRID NUMBER OF r COORDINATES                 [1]"         50
-    "GRID NUMBER OF Amplitude COORDINATES         [1]"          1
-    "NUMBER OF FLOQUET BLOCK                      [1]"         10
-    -
-    -
-================================================================================
-OPTION
->>>>>>> 9f36052... new code
-================================================================================
-    -------------------------------------------------- ----------.----------
-    [UNIT]
-        NOTE: Default unit system is au.
-    [OUTPUT]
-        "MAKE LOG FILE                          [T/F]"     .false.
-    -
-    -
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<<<<<<< HEAD
->>>>>>> 9f36052... new code
-=======
->>>>>>> 9f36052... new code
