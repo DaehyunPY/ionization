@@ -85,7 +85,6 @@ function Poten_r(r)
     real(dp) :: Poten_r, stat, pol, tmp 
     if(ty == 0) then 
         tmp     = 7.75d0*r**2.d0*exp(-r) ! example 2.6.1
-!         tmp     = -2.5d0 ! example P G Burke 
         Poten_r = tmp/Charge
     else if(ty == 1) then 
         Poten_r = Z/r 
@@ -192,7 +191,7 @@ subroutine PROC_input
     if(tmp1 >= 0.d0) Scatt = tmp1 
     if(tmp2 >= 0.d0) Scatt = tmp2*eV_to_au
     read(file_input, form_poten) ty, Z, alphab, cutoff
-    if(.not. (ty >= 0 .and. ty <= 6)) stop "Error #051: check 'POTENTIAL - TYPE'"
+    if(.not. (ty >= 0 .and. ty <= 5)) stop "Error #051: check 'POTENTIAL - TYPE'"
     if(ty == 0) then 
         read(file_input, form_p1)         
     else if(ty == 1) then 
@@ -259,15 +258,6 @@ subroutine PROC_inform
     use unit_const, only: other_e_eV, au_hartree
     character(30), parameter :: form_out = '(1A15, 1ES15.3)'
     real     (dp), parameter :: au_to_eV = au_hartree/other_e_ev
-
-    write(file_log, *) "================================================================="
-    write(file_log, *) "LASER FIELD"
-    write(file_log, *) "================================================================="
-    write(file_log, *) " -------------------------------------------  -------------------"
-    write(file_log, *) " AMPLITUDE                              [au] ", Amp 
-    write(file_log, *) " FREQUENCY                              [au] ", Freq
-    write(file_log, *) " - "
-    write(file_log, *) " - "
 
     write(file_log, *) "================================================================="
     write(file_log, *) "PARTICLE: ELECTRON"
@@ -378,7 +368,7 @@ end subroutine PROC_inform
 ! end information ----------------------------------
 ! coordination -------------------------------------
 subroutine PORC_coord
-    use gsl_special, only: gsl_sf_legendre_Pl
+    use fgsl, only: fgsl_sf_legendre_Pl
     real   (dp) :: tmp
     real   (qp) :: sum 
     integer(i4) :: n, i, j, k 
@@ -399,7 +389,7 @@ subroutine PORC_coord
     coord_weight(0) = tmp 
     do i = 1, n -1
         coord_rho   (i) = X(1, i)
-        coord_weight(i) = tmp/(gsl_sf_legendre_Pl(n, coord_rho(i)))**2.d0 
+        coord_weight(i) = tmp/(fgsl_sf_legendre_Pl(n, coord_rho(i)))**2.d0 
     end do 
     coord_rho   (n) = 1.d0
     coord_weight(n) = tmp 
@@ -431,7 +421,7 @@ end subroutine PORC_coord
 ! end coordination ---------------------------------
 ! potential plot -----------------------------------
 subroutine PROC_Poten_plot
-    use gsl_special, only: gsl_sf_legendre_Pl
+    use fgsl, only: fgsl_sf_legendre_Pl
     integer  (i1), parameter :: file_poten = 101, file_coord = 102 
     character(30), parameter :: form_gen   = '(30ES25.10)'
     integer  (i4) :: i 
@@ -446,7 +436,7 @@ subroutine PROC_Poten_plot
     write(file_coord, form_gen) coord_r(0_i4), coord_rho(0), coord_weight(0)
     do i = 1, N -1 
         write(file_coord, form_gen) coord_r(i), coord_rho(i), coord_weight(i), & 
-            N*(coord_rho(i)*gsl_sf_legendre_Pl(N, coord_rho(i)) -gsl_sf_legendre_Pl(N -1_i4, coord_rho(i))) &
+            N*(coord_rho(i)*fgsl_sf_legendre_Pl(N, coord_rho(i)) -fgsl_sf_legendre_Pl(N -1_i4, coord_rho(i))) &
                 /(coord_rho(i)**2.d0 -1.d0)
     end do 
     write(file_coord, form_gen) coord_r(N), coord_rho(N), coord_weight(N)

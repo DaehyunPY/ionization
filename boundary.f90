@@ -17,33 +17,33 @@ subroutine mat_R(m, l)
     real     (qp) :: sum 
     integer  (i4) :: i
     if(.not. allocated(R)) allocate(R(l:l))
-    sum = 0.0_dp 
+    sum = 0.d0  
     do i = 1, N 
-        sum = sum +H(i, N)**2.0_dp/(E(i) -coord_E(m))
+        sum = sum +H(i, N)**2.d0/(E(i) -coord_E(m))
     end do 
-    R(l) = sum/(2.0_dp*Mass*Bound)
+    R(l) = sum/(2.d0*Mass*Bound)
     write(file_log, form_out) "R: ", R(l)
 end subroutine mat_R
 ! matrix K -----------------------------------------
 subroutine mat_K(m, l)
     use hamiltonian, only: coord_E
-    use gsl_special, only: gsl_sf_bessel_jsl, gsl_sf_bessel_ysl
+    use fgsl, only: fgsl_sf_bessel_jsl, fgsl_sf_bessel_ysl
     character(30), parameter  :: form_out = '(1A15, 1ES15.3)'
     integer  (i4), intent(in) :: m, l 
     real     (dp) :: ka, sb_j, sb_y, diff_j, diff_y 
     real     (dp) :: agamma, tmp1, tmp2 
     if(.not. allocated(K)) allocate(K(l:l))
-    ka = (2.0_dp*Mass*coord_E(m))**0.50_dp*Bound
-    sb_j = gsl_sf_bessel_jsl(l, ka)
-    sb_y = gsl_sf_bessel_ysl(l, ka)
+    ka = (2.d0*Mass*coord_E(m))**0.5d0*Bound
+    sb_j = fgsl_sf_bessel_jsl(l, ka)
+    sb_y = fgsl_sf_bessel_ysl(l, ka)
     if(l /= 0) then 
-        diff_j = gsl_sf_bessel_jsl(l -1_i4, ka) -dble(l +1)/ka*gsl_sf_bessel_jsl(l, ka)
-        diff_y = gsl_sf_bessel_ysl(l -1_i4, ka) -dble(l +1)/ka*gsl_sf_bessel_ysl(l, ka)
+        diff_j = fgsl_sf_bessel_jsl(l -1_i4, ka) -dble(l +1)/ka*fgsl_sf_bessel_jsl(l, ka)
+        diff_y = fgsl_sf_bessel_ysl(l -1_i4, ka) -dble(l +1)/ka*fgsl_sf_bessel_ysl(l, ka)
     else if(l == 0) then 
-        diff_j = -gsl_sf_bessel_jsl(1_i4, ka) -dble(1)/ka*gsl_sf_bessel_jsl(0_i4, ka)
-        diff_y = -gsl_sf_bessel_ysl(1_i4, ka) -dble(1)/ka*gsl_sf_bessel_ysl(0_i4, ka)
+        diff_j = -fgsl_sf_bessel_jsl(1_i4, ka) -dble(1)/ka*fgsl_sf_bessel_jsl(0_i4, ka)
+        diff_y = -fgsl_sf_bessel_ysl(1_i4, ka) -dble(1)/ka*fgsl_sf_bessel_ysl(0_i4, ka)
     end if 
-    agamma = 1.0_dp/R(l) -1.0_dp
+    agamma = 1.d0/R(l) -1.d0
     tmp1   = ka*diff_j -agamma*sb_j 
     tmp2   = ka*diff_y -agamma*sb_y 
     K(l)   = tmp1/tmp2
@@ -55,7 +55,7 @@ subroutine mat_S(m, l)
     character(60), parameter  :: form_out = '(1A15, 1ES15.3, 1ES15.3, "i")'
     integer  (i4), intent(in) :: m, l 
     if(.not. allocated(S)) allocate(S(m:m, l:l))
-    S(m, l) = (1.0_dp +i*K(l))/(1.0_dp -i*K(l))
+    S(m, l) = (1.d0 +i*K(l))/(1.d0 -i*K(l))
     write(file_log, form_out) "S: ", S(m, l)
 end subroutine mat_S
 ! matrix A -----------------------------------------
@@ -67,17 +67,17 @@ subroutine mat_A(m, l)
     real     (dp) :: tmp1, tmp2 
     if(.not. allocated(A)) allocate(A(l:l))
     if(mod(l, 4_i4) == 0) then 
-        sign = 1.0_dp 
+        sign = 1.d0 
     else if(mod(l, 4_i4) == 1) then 
         sign = i 
     else if(mod(l, 4_i4) == 2) then 
-        sign = -1.0_dp 
+        sign = -1.d0 
     else if(mod(l, 4_i4) == 3) then 
         sign = -i 
     end if 
-    tmp1 = (1.0_dp +real(S(m, l)))/2.0_dp 
-    tmp2 = aimag(S(m, l))/2.0_dp 
-    A(l) = sign*(2.0_dp*dble(l) +1.0_dp)*exp(tmp1 +i*tmp2)
+    tmp1 = (1.d0 +real(S(m, l)))/2.d0 
+    tmp2 = aimag(S(m, l))/2.d0 
+    A(l) = sign*(2.d0*dble(l) +1.d0)*exp(tmp1 +i*tmp2)
     write(file_log, form_out) "A: ", A(l)
 end subroutine mat_A
 
