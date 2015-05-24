@@ -1,28 +1,17 @@
 ============================================================
-LASER FIELD
+LASER FIELD SCATTERING 
 ============================================================
  -------------------------------------------  ------.------
- AMPLITUDE                              [au]       0.06
  FREQUENCY                              [au]       0.2
- -
- -
-============================================================
-PARTICLE
-============================================================
- -------------------------------------------  ------.------
- MASS                                   [au]       1.
- CHARGE                                 [au]      -1.
- SPIN                                    [1]       0.5
- COUTION: You must set which one unit, au or eV. 
- SCATTERING ENERGY                      [au]       0.2
-                                        [eV]      -1.
+ MAXIMUM AMPLITUDE                      [au]       0.1
+ MINIMUM AMPLITUDE                      [au]       0.01  
  -
  -
 ============================================================
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- TYPE                                 [TYPE]       0 
+ POTENTIAL TYPE                       [TYPE]       0 
  ELEMENT NUMBER                          [1]      18.
  POLARIZABILITY                         [au]      10.77  
  CUTOFF                                 [au]       1.76  
@@ -52,14 +41,14 @@ POTENTIAL
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- INNER REGION SIZE                      [au]       1.
- OUTER REGION SIZE                      [au]       1.
- MAXIUM OF ANGULAR MOMANTUM L            [1]       0 
- GRID NUMBER OF r COORDINATES            [1]      50  
- FLOQUET NUMBER                          [1]      30
- GRID NUMBER OF Energy COORDINATES       [1]    1000
- 3D PLOT NUMBER OF r COORDINATES         [1]     200 
- 3D PLOT NUMBER OF theta COORDINATES     [1]     200 
+ INNER REGION SIZE                      [au]       1.0
+ OUTER REGION SIZE                      [au]       3.0   
+ PROPAGATE PARAMETER                     [1]       0.01 
+ MAXIMUM OF ANGULAR MOMANTUM L           [1]       0 
+ GRID NUMBER OF r COORDINATES            [1]      50
+ FLOQUET BLOCK NUMBER                    [1]       7
+ GRID NUMBER OF Amplitude COORDINATES    [1]     100 
+ GRID NUMBER OF 3D PLOT                  [1]     200 
  -
  -
 ============================================================
@@ -71,17 +60,6 @@ OPTION
     USE ENERGY UNIT eV                 [1/0]       0 
     USE ANGULAR UNIT degree            [1/0]       0
     USE CROSS SECTION UNIT A^2         [1/0]       0
- [OUTPUT 1] GENERAL 
-    BASIS FUNCTION                     [1/0]       1
-    BOUND STATES ENERGY & FUNCTION     [1/0]       0
- [OUTPUT 2] POTENTIAL SCATTERING 
-    DIFFERCIAL CROSS SECTION           [1/0]       1
-    INNER REGION WAVE FUNCTION         [1/0]       0
-    OUTER REGION WAVE FUNCTION         [1/0]       0
- [OUTPUT 3] RESONANCE 
- COUTION: OUTPUT 1 & 2 option would be invalid. 
- COUTION: KINETIC ENERGY value would be maxium one. 
-    KINETIC ENERGY vs CROSS SECTION    [1/0]       0
-    KINETIC ENERGY vs PHASE SHIFT      [1/0]       0
+ [OUTPUT]
  -
  -
