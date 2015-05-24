@@ -58,9 +58,11 @@ end function Delta_rho
 function Poten_r(r)
     real(dp), intent(in) :: r
     real(dp) :: Poten_r, stat, pol, tmp 
-    if(ty == 0) then 
-!         tmp     = 7.75_dp*r**2_dp*exp(-r) ! example 2.6.1
-        tmp     = -2.5_dp ! example P G Burke 
+!     if(ty == 0) then ! Example 2.6.1
+!         tmp     = 7.75_dp*r**2_dp*exp(-r)
+!         Poten_r = tmp/Charge
+    if(ty == 0) then ! Example P G Burke 
+        tmp     = -2.5_dp 
         Poten_r = tmp/Charge
     else if(ty == 1) then 
         Poten_r = Z/r 
@@ -189,7 +191,7 @@ subroutine PROC_input
     end if 
     read (file_input, form_cal) ra, L, N, F, M, pr, ptheta
     if(ra < 0_dp)      stop "Input value is not valid: check 'CALCULATION - BOUNDARY SIZE'."
-    if(L  < 0)         stop "Input value is not valid: check 'CALCULATION - MAXIUM OF ANGULAR MOMANTUM L'."
+    if(L  < 0)         stop "Input value is not valid: check 'CALCULATION - MAXIUM OF QUANTUM NUMBER L'."
     if(N  < 0)         stop "Input value is not valid: check 'CALCULATION - GRID NUMBER OF r COORDINATES'."
     if(F  < 0)         stop "Input value is not valid: check 'CALCULATION - FLOQUET NUMBER'."
     if(M  < 0)         stop "Input value is not valid: check 'CALCULATION - GRID NUMBER OF Energy COORDINATES'."
@@ -221,12 +223,12 @@ subroutine PROC_input
     if(.not. allocated(coord_weight)) allocate(coord_weight(0:N))
     if(.not. allocated(coord_dshape)) allocate(coord_dshape(0:N, 0:N))
     if(op_basis == "N" .and. op_inner == "N") then 
-        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, N:N))
+        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, N:N))
     else if(op_basis == "Y" .or. op_inner == "Y") then 
-        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, 1:N))
+        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, 1:N))
     end if 
     if(.not. allocated(E)) allocate(E(1:(2*F +1)*N))
-    if(.not. allocated(R)) allocate(R(0:L, -F:F))
+    if(.not. allocated(R)) allocate(R(0:L))
     if(.not. allocated(K)) allocate(K(0:L))
     if(.not. allocated(S)) allocate(S(0:L))
     if(.not. allocated(A)) allocate(A(0:L))
@@ -356,7 +358,7 @@ subroutine PROC_inform
     write(file_log, *) "================================================================="
     write(file_log, *) " -------------------------------------------  ------------------ "
     write(file_log, *) " BOUNDARY SIZE                          [au] ", ra 
-    write(file_log, *) " MAXIUM OF ANGULAR MOMANTUM L            [1] ", L 
+    write(file_log, *) " MAXIUM OF QUANTUM NUMBER L              [1] ", L 
     write(file_log, *) " GRID NUMBER OF r COORDINATES            [1] ", N 
     write(file_log, *) " FLOQUET NUMBER                          [1] ", F 
     write(file_log, *) " GRID NUMBER OF Energy COORDINATES       [1] ", M  
@@ -426,7 +428,7 @@ subroutine PROC_Poten_plot
 
     open(file_poten, file = "output/poten.d")
     do i = 1, N
-        write(file_poten, form_gen) coord_r(i), Poten_r(coord_r(i))*Charge
+        write(file_poten, form_gen) coord_r(i), Poten_r(coord_r(i))
     end do
     close(file_poten)
 

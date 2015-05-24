@@ -10,45 +10,29 @@ contains
 ! FUNCTION
 ! ==================================================
 ! kinetic term -------------------------------------
-function mat_kinet(i, j)
+function mat_Kinet(i, j)
     use hamiltonian, only: Delta_rho 
     integer(i4), intent(in) :: i, j 
-    real   (dp) :: mat_kinet, tmp 
-    tmp        = -Delta_rho(i, j)/dr_p_drho**2_dp 
-    mat_kinet  = tmp/(2_dp*Mass)
-end function mat_kinet 
+    real   (dp) :: mat_Kinet, tmp 
+    tmp       = -Delta_rho(i, j)/dr_p_drho**2_dp 
+    mat_Kinet = tmp/(2_dp*Mass)
+end function mat_Kinet 
 ! potential term -----------------------------------
-function mat_poten(i)
+function mat_Poten(i)
     use hamiltonian, only: coord_r, Poten_r 
     integer(i4), intent(in) :: i
-    real   (dp) :: mat_poten, tmp 
-    tmp        = Poten_r(coord_r(i))
-    mat_poten  = tmp*Charge
-end function mat_poten 
+    real   (dp) :: mat_Poten, tmp 
+    tmp       = Poten_r(coord_r(i))
+    mat_Poten = tmp*Charge
+end function mat_Poten 
 ! angular term -------------------------------------
-function mat_angular(l, i)  
+function mat_angular(l, i)
     use hamiltonian, only: coord_r, angular_r
     integer(i4), intent(in) :: l, i
     real   (dp) :: mat_angular, tmp 
     tmp         = angular_r(l)/coord_r(i)**2_dp
     mat_angular = tmp/(2_dp*Mass)
 end function mat_angular
-! floquet term -------------------------------------
-function mat_floquet(n)
-    use hamiltonian, only: coord_r
-    integer(i4), intent(in) :: n
-    real   (dp) :: mat_floquet, tmp 
-    tmp         = dble(n)*Freq
-    mat_floquet = tmp
-end function mat_floquet
-! dipole term --------------------------------------
-function mat_dipole(i)
-    use hamiltonian, only: coord_r
-    integer(i4), intent(in) :: i
-    real   (dp) :: mat_dipole, tmp 
-    tmp         = 0.5_dp*Amp*coord_r(i)
-    mat_dipole  = tmp*Charge
-end function mat_dipole
 
 
 ! ==================================================
@@ -126,14 +110,12 @@ end subroutine diag
 ! check matrix -------------------------------------
 subroutine check_norm
     real(qp) :: sum, total  
-    integer  :: i1, i2, j 
+    integer  :: i, j 
     total = 0_dp 
     do j = 1, (2*F +1)*N
         sum = 0_dp 
-        do i2 = -F, F
-            do i1 = 1, N 
-                sum = sum +H(j, i2, i1)*H(j, i2, i1)*coord_weight(i1)*dr_p_drho
-            end do 
+        do i = 1, N 
+            sum = sum +H(j, i)*H(j, i)*coord_weight(i)*dr_p_drho
         end do 
         write(*, *) j, dble(sum)
         total = total +sum 
@@ -155,11 +137,13 @@ end subroutine check_norm
 ! ==================================================
 ! hamiltonian --------------------------------------
 subroutine PROC_H(l) 
-!     use math_const, only: i => math_i, pi => math_pi
-    character(30), parameter  :: form_out = '(1A15, 10F9.3)'
+    use math_const, only: i => math_i, pi => math_pi
+    character(30), parameter  :: form_out = '(1A15, 10F10.3)'
     integer  (i4), intent(in) :: l 
     real     (dp), pointer    :: p1_H(:, :, :, :), p2_H(:, :, :), p_H(:)
-    real     (dp) :: sign, tmp 
+    complex  (dp) :: tmp1 
+    real     (dp) :: sign, tmp2 
+    real     (qp) :: sum 
     integer  (i4) :: i1, i2, j1, j2 
 
     if(associated(mat_H)) nullify(mat_H)
@@ -180,16 +164,15 @@ subroutine PROC_H(l)
     do j1 =  1, N 
         do i2 = max(j2 -1_i4, -F), min(j2 +1_i4, F)
         do i1 = 1, N
-            tmp = 0_dp 
+            tmp2 = 0_dp 
             if(i2 == j2) then 
-                             tmp = tmp +mat_kinet(i1, j1)
-                if(i1 == j1) tmp = tmp +mat_poten(i1)
-                if(i1 == j1) tmp = tmp +mat_angular(l, i1)
-                if(i1 == j1) tmp = tmp +mat_floquet(i2) 
+                             tmp2 = tmp2 +mat_Kinet(i1, j1)
+                if(i1 == j1) tmp2 = tmp2 +mat_Poten(i1) +mat_angular(l, i1)
+                if(i1 == j1) tmp2 = tmp2 +dble(i2)*Freq
             else if(i2 == j2 -1 .or. i2 == j2 +1) then 
-                if(i1 == j1) tmp = tmp +mat_dipole(i1)
+                if(i1 == j1) tmp2 = tmp2 +0.5_dp*Amp
             end if 
-            p1_H(i1, i2, j1, j2)  = tmp 
+            p1_H(i1, i2, j1, j2)  = tmp2 
         end do 
         end do
     end do 
@@ -198,18 +181,23 @@ subroutine PROC_H(l)
     call diag
 !     call check_mat ! for test 
 
-    H(:, :, :) = 0_dp
-    j1 = 1 
-    if(size(H(1, 0, :)) == 1) j1 = N 
+    H(:, :) = 0_dp
+    j1      = 1 
+    if(size(H(1, :)) == 1) j1 = N 
     do j2 = 1, (2*F +1)*N 
         sign = 1_dp 
         if(mat_H(1, j2) < 0_dp) sign = -1_dp 
         do i1 = j1, N 
+        sum  = 0_dp 
             do i2 = -F, F 
-                tmp = sign*p2_H(i1, i2, j2)
-                tmp = tmp/(coord_weight(i1)*dr_p_drho)**0.5_dp
-                H(j2, i2, i1) = tmp 
+                tmp1 = (exp(-i*E(j2)*2_dp*pi/Freq) -1_dp)/(-i*(E(j2) +dble(i2)*Freq)*2_dp*pi/Freq)
+                tmp2 = sign*p2_H(i1, i2, j2)
+                tmp2 = tmp2/(coord_weight(i1)*dr_p_drho)**0.5_dp
+!                 sum  = sum +abs(tmp1)*tmp2 
+                sum  = sum +tmp2 ! for test 
+!                 sum  = tmp2 ! for test 
             end do 
+        H(j2, i1) = sum 
         end do 
     end do 
     call check_norm ! for test 
@@ -219,7 +207,6 @@ subroutine PROC_H(l)
     if(associated(p1_H))  nullify(p1_H)
     if(associated(p2_H))  nullify(p2_H)
     if(associated(p_H))   nullify(p_H)
-!     write(file_log, form_out) "Energy: ", (E(i1), i1 = (2*F)*N +1, (2*F)*N +5) 
     write(file_log, form_out) "Energy: ", (E(i1), i1 = 1, 5) 
 end subroutine PROC_H
 ! end hamiltonian ----------------------------------
@@ -227,29 +214,20 @@ end subroutine PROC_H
 subroutine PROC_basis_plot(num)
     use hamiltonian, only: coord_r
     integer  (i1), parameter  :: file_psi = 101, file_ene = 102
-    character(30), parameter  :: &
-        form_commet =  '(1A5, 1A25, 10ES25.10)', &
-        form_psi = '(1I5, 1ES25.10, 10ES25.10)', &
-        form_ene = '(1I5, 1ES25.10)'
+    character(30), parameter  :: form_gen = '(1000ES25.10)'
     integer  (i4), intent(in) :: num 
-    integer  (i4) :: i1, i2, j
+    integer  (i4) :: i, j
     character (3) :: ch 
 
     write(ch, '(I3.3)') num 
     open(file_psi, file = "output/basis_u_"//ch//".d")
     open(file_ene, file = "output/basis_energy_"//ch//".d")
 
-    write(file_psi, form_commet) "#", "Energy", (E(j), j = 1, 5), (E(j), j = N -4, N)
-    do i2 = -F, F 
-        write(file_psi, form_psi) i2, 0.d0, (0.d0, j = 1, 10)
-        do i1 =  1, N 
-            write(file_psi, form_psi) i2, coord_r(i1), & 
-                (H(j, i2, i1), j = 1, 5), (H(j, i2, i1), j = N -4, N)
-        end do 
-        write(file_psi, form_psi) 
+    do i =  1, N 
+        write(file_psi, form_gen) coord_r(i), (H(j, i), j = 1, 5), (H(j, i), j = N -4, N)
     end do 
     do j = 1, (2*F +1)*N 
-        write(file_ene, form_ene) j, E(j) 
+        write(file_ene, form_gen) dble(j), E(j) 
     end do 
     close(file_psi)
     close(file_ene)

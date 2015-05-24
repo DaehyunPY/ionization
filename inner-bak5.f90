@@ -21,8 +21,8 @@ subroutine inner_coeff(l)
     
     tmp1 = A(l)*(sb_j -K(l)*sb_y)
     do j = 1, N 
-!         tmp2       = H(j, N)/(2.d0*Mass*(E(j) -Scatt))
-!         inner_a(j) = tmp1*tmp2/R(l)
+        tmp2       = H(j, N)/(2.d0*Mass*(E(j) -Scatt))
+        inner_a(j) = tmp1*tmp2/R(l)
     end do     
 end subroutine inner_coeff
 
@@ -49,7 +49,7 @@ subroutine PROC_inner_achive(l)
     do i = 1, N 
         sum = 0.d0 
         do j = 1, N 
-!             sum = sum +inner_a(j)*H(j, i)
+            sum = sum +inner_a(j)*H(j, i)
         end do 
         inner_u(l, i) = sum 
     end do 

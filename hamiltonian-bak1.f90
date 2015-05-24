@@ -59,8 +59,7 @@ function Poten_r(r)
     real(dp), intent(in) :: r
     real(dp) :: Poten_r, stat, pol, tmp 
     if(ty == 0) then 
-!         tmp     = 7.75_dp*r**2_dp*exp(-r) ! example 2.6.1
-        tmp     = -2.5_dp ! example P G Burke 
+        tmp     = 7.75_dp*r**2_dp*exp(-r)
         Poten_r = tmp/Charge
     else if(ty == 1) then 
         Poten_r = Z/r 
@@ -141,7 +140,7 @@ subroutine PROC_input
     use math_const, only: pi => math_pi
     use unit_const, only: other_e_eV, au_hartree
     character(60), parameter :: & 
-        form_laser = '(4/, 2(45X, 1F15.8, /), /)', &
+        form_laser = '(4/, 2(45X, 1F15.8, /), 1(45X, 1I15, /), /)', &
         form_part  = '(4/, 3(45X, 1F15.8, /), 1/, 2(45X, 1F15.8, /), /)', &
         form_poten = '(4/, 1(45X, 1I15, /), 3(45X, 1F15.8, /))'
     character(30), parameter :: &
@@ -158,7 +157,7 @@ subroutine PROC_input
     real     (dp) :: tmp1, tmp2 
 
     open(file_input, file = "input.d")
-    read(file_input, form_laser) Amp, Freq
+    read(file_input, form_laser) Amp, Freq, apho
     if(Amp  < 0_dp) stop "Input value is not valid: check 'LASER FIELD - AMPLITUDE'."
     if(Freq < 0_dp) stop "Input value is not valid: check 'LASER FIELD - FREQUENCY'."
     read(file_input, form_part ) Mass, Charge, Spin, tmp1, tmp2 
@@ -189,9 +188,10 @@ subroutine PROC_input
     end if 
     read (file_input, form_cal) ra, L, N, F, M, pr, ptheta
     if(ra < 0_dp)      stop "Input value is not valid: check 'CALCULATION - BOUNDARY SIZE'."
-    if(L  < 0)         stop "Input value is not valid: check 'CALCULATION - MAXIUM OF ANGULAR MOMANTUM L'."
+    if(L  < 0)         stop "Input value is not valid: check 'CALCULATION - MAXIUM OF QUANTUM NUMBER L'."
     if(N  < 0)         stop "Input value is not valid: check 'CALCULATION - GRID NUMBER OF r COORDINATES'."
     if(F  < 0)         stop "Input value is not valid: check 'CALCULATION - FLOQUET NUMBER'."
+    if(F  < abs(apho)) stop "Input value is not valid: check 'CALCULATION - FLOQUET NUMBER'."
     if(M  < 0)         stop "Input value is not valid: check 'CALCULATION - GRID NUMBER OF Energy COORDINATES'."
     if(pr < 0)         stop "Input value is not valid: check 'CALCULATION - 3D PLOT NUMBER OF r COORDINATES'."
     if(ptheta < 0)     stop "Input value is not valid: check 'CALCULATION - 3D PLOT NUMBER OF theta COORDINATES'."
@@ -221,12 +221,14 @@ subroutine PROC_input
     if(.not. allocated(coord_weight)) allocate(coord_weight(0:N))
     if(.not. allocated(coord_dshape)) allocate(coord_dshape(0:N, 0:N))
     if(op_basis == "N" .and. op_inner == "N") then 
-        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, N:N))
+!         if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, N:N))
+        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, N:N))
     else if(op_basis == "Y" .or. op_inner == "Y") then 
-        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, 1:N))
+!         if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, -F:F, 1:N))
+        if(.not. allocated(H)) allocate(H(1:(2*F +1)*N, 1:N))
     end if 
     if(.not. allocated(E)) allocate(E(1:(2*F +1)*N))
-    if(.not. allocated(R)) allocate(R(0:L, -F:F))
+    if(.not. allocated(R)) allocate(R(0:L))
     if(.not. allocated(K)) allocate(K(0:L))
     if(.not. allocated(S)) allocate(S(0:L))
     if(.not. allocated(A)) allocate(A(0:L))
@@ -254,6 +256,7 @@ subroutine PROC_inform
     write(file_log, *) " -------------------------------------------  -------------------"
     write(file_log, *) " AMPLITUDE                              [au] ", Amp 
     write(file_log, *) " FREQUENCY                              [au] ", Freq
+    write(file_log, *) " ABSORBED PHOTON NUMBER                  [1] ", apho
     write(file_log, *) " - "
     write(file_log, *) " - "
     
@@ -271,7 +274,7 @@ subroutine PROC_inform
 
     if(ty == 0) then 
         write(file_log, *) "================================================================="
-        write(file_log, *) "POTENTIAL: EXAMPLE"
+        write(file_log, *) "POTENTIAL: EXAMPLE 2.6.1"
         write(file_log, *) "================================================================="
         write(file_log, *) " -------------------------------------------  ------------------ "
         write(file_log, *) " - "
@@ -356,7 +359,7 @@ subroutine PROC_inform
     write(file_log, *) "================================================================="
     write(file_log, *) " -------------------------------------------  ------------------ "
     write(file_log, *) " BOUNDARY SIZE                          [au] ", ra 
-    write(file_log, *) " MAXIUM OF ANGULAR MOMANTUM L            [1] ", L 
+    write(file_log, *) " MAXIUM OF QUANTUM NUMBER L              [1] ", L 
     write(file_log, *) " GRID NUMBER OF r COORDINATES            [1] ", N 
     write(file_log, *) " FLOQUET NUMBER                          [1] ", F 
     write(file_log, *) " GRID NUMBER OF Energy COORDINATES       [1] ", M  
@@ -426,7 +429,7 @@ subroutine PROC_Poten_plot
 
     open(file_poten, file = "output/poten.d")
     do i = 1, N
-        write(file_poten, form_gen) coord_r(i), Poten_r(coord_r(i))*Charge
+        write(file_poten, form_gen) coord_r(i), Poten_r(coord_r(i))
     end do
     close(file_poten)
 

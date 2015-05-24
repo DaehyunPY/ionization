@@ -2,8 +2,9 @@
 LASER FIELD
 ============================================================
  -------------------------------------------  ------.------
- AMPLITUDE                              [au]       0.1
- FREQUENCY                              [au]       0.2
+ AMPLITUDE                              [au]       1.
+ FREQUENCY                              [au]       1.
+ ABSORBED PHOTON NUMBER                  [1]       2
  -
  -
 ============================================================
@@ -22,11 +23,11 @@ PARTICLE
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- TYPE                                 [TYPE]       0 
+ TYPE                                 [TYPE]       1  
  ELEMENT NUMBER                          [1]       1.
  POLARIZABILITY                         [au]      10.77  
  CUTOFF                                 [au]       1.76  
- [TYPE 0] EXAMPLE 
+ [TYPE 0] EXAMPLE 2.6.1 
  [TYPE 1] COULOMB
  [TYPE 2] GELTMAN
     COEFFICIENT z0                      [au]      1.07
@@ -52,10 +53,10 @@ POTENTIAL
 CALCULATION
 ============================================================
  -------------------------------------------  ------.------
- BOUNDARY SIZE                          [au]       1.
- MAXIUM OF ANGULAR MOMANTUM L            [1]       0 
+ BOUNDARY SIZE                          [au]      30.
+ MAXIUM OF QUANTUM NUMBER L              [1]       0 
  GRID NUMBER OF r COORDINATES            [1]      50  
- FLOQUET NUMBER                          [1]      30
+ FLOQUET NUMBER                          [1]       3
  GRID NUMBER OF Energy COORDINATES       [1]    1000
  3D PLOT NUMBER OF r COORDINATES         [1]     200 
  3D PLOT NUMBER OF theta COORDINATES     [1]     200 
@@ -71,9 +72,9 @@ OPTION
     USE ANGULAR UNIT degree            [Y/N]       YES  
     USE CROSS SECTION UNIT A^2         [Y/N]       YES 
  [OUTPUT]
-    POTENTIAL FUNCTION                 [Y/N]       YES  
+    POTENTIAL FUNCTION                 [Y/N]       NO 
     BASIS FUNCTION                     [Y/N]       YES 
-    CROSS SECTION FUNCTION             [Y/N]       YES 
+    CROSS SECTION FUNCTION             [Y/N]       YES
     INNER REGION WAVE FUNCTION         [Y/N]       NO 
     OUTER REGION WAVE FUNCTION         [Y/N]       NO 
  [SPECIAL CALCULATION]

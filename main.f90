@@ -8,7 +8,10 @@ program main
     use inner,       only: PROC_inner_achive, PROC_inner_plot
     use outer,       only: PROC_CS_achive, PROC_CS_plot, PROC_outer_plot, PROC_E_vs_CS_plot
     implicit none
-    character(30), parameter :: form_out = '(1A25, 5X, 1ES15.3)'
+    character(30), parameter :: & 
+        form_round = '(1A20, 1I10, 1A20, 1F10.3)', &
+        form_time1 = '(1A25, 5X, 1ES15.3)', &
+        form_time2 = '(1A15, 1ES15.3)'
     real     (sp) :: tt, t0, t1, t2 
     integer  (i4) :: i, j 
 
@@ -26,7 +29,7 @@ program main
         end if
         write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_out) "PROCESS RUNNING TIME: ", t2 -t1 
+    write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t1 
     write(file_log, *) 
     write(file_log, *) 
     write(file_log, *) 
@@ -42,7 +45,7 @@ program main
         Scatt = coord_E(j)
         do i = 0, L 
             call cpu_time(t1)
-            write(file_log, *) "ROUND", i, coord_E(j)
+            write(file_log, form_round) "ANGULAR MOMANTUM ", i, "SCATTERING ENERGY ", coord_E(j)
                 call PROC_H(i) 
                 if(op_basis == "Y") &
                 call PROC_basis_plot(i)
@@ -52,7 +55,7 @@ program main
                 if(op_inner == "Y") & 
                 call PROC_inner_achive(i)
             call cpu_time(t2) 
-            write(file_log, form_out) "RUNNING TIME: ", t2 -t1
+            write(file_log, form_time2) "RUNNING TIME: ", t2 -t1
             write(file_log, *) 
         end do 
         if(op_basis == "Y") & 
@@ -62,7 +65,7 @@ program main
         write(file_log, *)
     end do 
     call cpu_time(t2) 
-    write(file_log, form_out) "PROCESS RUNNING TIME: ", t2 -t0 
+    write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t0 
     write(file_log, *) 
     write(file_log, *) 
     write(file_log, *) 
@@ -94,7 +97,7 @@ program main
 !         if(op_lt    == "Y")
         write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_out) "PROCESS RUNNING TIME: ", t2 -t1 
+    write(file_log, form_time1) "PROCESS RUNNING TIME: ", t2 -t1 
     write(file_log, *)
     write(file_log, *)
     write(file_log, *)
@@ -105,7 +108,7 @@ program main
     write(file_log, *) "PROGRAM OVER"
     write(file_log, *)
     call cpu_time(t2)
-    write(file_log, form_out) "PROGRAM RUNNING TIME: ", tt -t1 
+    write(file_log, form_time1) "PROGRAM RUNNING TIME: ", tt -t1 
     write(file_log, *)
     call PROC_out 
     write(*, *) "Program over."
