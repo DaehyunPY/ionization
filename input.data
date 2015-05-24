@@ -15,15 +15,15 @@ PARTICLE
  SPIN                                    [1]       0.5
  COUTION: You must set which one unit, au or eV. 
  SCATTERING ENERGY                      [au]      -1.
-                                        [eV]       8.
+                                        [eV]      20.
  -
  -
 ============================================================
 POTENTIAL
 ============================================================
  -------------------------------------------  ------.------
- TYPE                                 [TYPE]       5  
- ELEMENT NUMBER                          [1]      18.
+ TYPE                                 [TYPE]       3  
+ ELEMENT NUMBER                          [1]      10.
  POLARIZABILITY                         [au]       2.68  
  CUTOFF                                 [au]       1.76  
  [TYPE 0] EXAMPLE 
@@ -53,7 +53,7 @@ CALCULATION
 ============================================================
  -------------------------------------------  ------.------
  BOUNDARY SIZE                          [au]      30.
- MAXIUM OF ANGULAR MOMANTUM L            [1]      47  
+ MAXIUM OF ANGULAR MOMANTUM L            [1]       3 
  GRID NUMBER OF r COORDINATES            [1]      50  
  FLOQUET NUMBER                          [1]      30
  GRID NUMBER OF Energy COORDINATES       [1]    1000
@@ -67,20 +67,20 @@ OPTION
  -------------------------------------------  ------.------
  [UNIT]
  COUTION: Default unit system is a.u. 
-    USE ENERGY UNIT eV                 [Y/N]       YES    
+    USE ENERGY UNIT eV                 [Y/N]       YES  
     USE ANGULAR UNIT degree            [Y/N]       YES 
-    USE CROSS SECTION UNIT A^2         [Y/N]       YES 
+    USE CROSS SECTION UNIT A^2         [Y/N]       YES  
  [OUTPUT 1] GENERAL 
     BASIS FUNCTION                     [Y/N]       NO 
     BOUND STATES ENERGY & FUNCTION     [Y/N]       NO 
  [OUTPUT 2] POTENTIAL SCATTERING 
-    DIFFERCIAL CROSS SECTION           [Y/N]       YES  
+    DIFFERCIAL CROSS SECTION           [Y/N]       NO   
     INNER REGION WAVE FUNCTION         [Y/N]       NO 
     OUTER REGION WAVE FUNCTION         [Y/N]       NO 
  [OUTPUT 3] RESONANCE 
  COUTION: OUTPUT 1 & 2 option would be invalid. 
  COUTION: KINETIC ENERGY value would be maxium one. 
-    KINETIC ENERGY vs CROSS SECTION    [Y/N]       NO 
-    KINETIC ENERGY vs PHASE SHIFT      [Y/N]       NO   
+    KINETIC ENERGY vs CROSS SECTION    [Y/N]       YES
+    KINETIC ENERGY vs PHASE SHIFT      [Y/N]       YES  
  -
  -

@@ -84,8 +84,8 @@ function Poten_r(r)
     real(dp), intent(in) :: r
     real(dp) :: Poten_r, stat, pol, tmp 
     if(ty == 0) then 
-!         tmp     = 7.75d0*r**2.d0*exp(-r) ! example 2.6.1
-        tmp     = -2.5d0 ! example P G Burke 
+        tmp     = 7.75d0*r**2.d0*exp(-r) ! example 2.6.1
+!         tmp     = -2.5d0 ! example P G Burke 
         Poten_r = tmp/Charge
     else if(ty == 1) then 
         Poten_r = Z/r 

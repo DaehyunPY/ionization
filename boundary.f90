@@ -26,29 +26,46 @@ subroutine mat_R(m, l)
 end subroutine mat_R
 ! matrix K -----------------------------------------
 subroutine mat_K(m, l)
+    use math_const, only: pi => math_pi 
     use hamiltonian, only: coord_E
     use fgsl, only: fgsl_sf_bessel_jsl, fgsl_sf_bessel_ysl
     character(30), parameter  :: form_out = '(1A15, 1ES15.3)'
     integer  (i4), intent(in) :: m, l 
-    real     (dp) :: ka, sb_j, sb_y, diff_j, diff_y 
+    real     (dp) :: ka, shift, sb_j, sb_y, diff_j, diff_y 
     real     (dp) :: agamma, tmp1, tmp2 
     if(.not. allocated(K)) allocate(K(l:l))
     ka = (2.d0*Mass*coord_E(m))**0.5d0*Bound
-    sb_j = fgsl_sf_bessel_jsl(l, ka)
-    sb_y = fgsl_sf_bessel_ysl(l, ka)
-    if(l /= 0) then 
+    shift = -dble(l)*pi/2.d0 
+    if(l == 0) then 
+        tmp1 = -sin(ka +shift) +R(l)*ka*cos(ka +shift)
+        tmp2 = cos(ka +shift) +R(l)*ka*sin(ka +shift)
+        K(l) = tmp1/tmp2 
+    else 
+        sb_j = fgsl_sf_bessel_jsl(l, ka)
+        sb_y = fgsl_sf_bessel_ysl(l, ka)
         diff_j = fgsl_sf_bessel_jsl(l -1_i4, ka) -dble(l +1)/ka*fgsl_sf_bessel_jsl(l, ka)
         diff_y = fgsl_sf_bessel_ysl(l -1_i4, ka) -dble(l +1)/ka*fgsl_sf_bessel_ysl(l, ka)
-    else if(l == 0) then 
-        diff_j = -fgsl_sf_bessel_jsl(1_i4, ka) -dble(1)/ka*fgsl_sf_bessel_jsl(0_i4, ka)
-        diff_y = -fgsl_sf_bessel_ysl(1_i4, ka) -dble(1)/ka*fgsl_sf_bessel_ysl(0_i4, ka)
+        agamma = 1.d0/R(l) -1.d0
+        tmp1   = ka*diff_j -agamma*sb_j 
+        tmp2   = ka*diff_y -agamma*sb_y 
+        K(l)   = tmp1/tmp2
     end if 
-    agamma = 1.d0/R(l) -1.d0
-    tmp1   = ka*diff_j -agamma*sb_j 
-    tmp2   = ka*diff_y -agamma*sb_y 
-    K(l)   = tmp1/tmp2
     write(file_log, form_out) "K: ", K(l)
 end subroutine mat_K
+! subroutine mat_K(m, l)
+!     use math_const, only: pi => math_pi 
+!     use hamiltonian, only: coord_E
+!     character(30), parameter  :: form_out = '(1A15, 1ES15.3)'
+!     integer  (i4), intent(in) :: m, l 
+!     real     (dp) :: ka, shift, tmp1, tmp2 
+!     if(.not. allocated(K)) allocate(K(l:l))
+!     ka = (2.d0*Mass*coord_E(m))**0.5d0*Bound
+!     shift = -dble(l)*pi/2.d0 
+!     tmp1 = -sin(ka +shift) +R(l)*ka*cos(ka +shift)
+!     tmp2 = cos(ka +shift) +R(l)*ka*sin(ka +shift)
+!     K(l) = tmp1/tmp2 
+!     write(file_log, form_out) "K: ", K(l)
+! end subroutine mat_K
 ! matrix S -----------------------------------------
 subroutine mat_S(m, l)
     use math_const, only: i => math_i 
